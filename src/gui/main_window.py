@@ -30,12 +30,17 @@ def do_move(event):
     y = root.winfo_y() + deltay
     root.geometry(f"+{x}+{y}")
 
-# 绑定鼠标事件实现窗口拖动
-root.bind("<ButtonPress-1>", start_move)
-root.bind("<ButtonRelease-1>", stop_move)
-root.bind("<B1-Motion>", do_move)
+# 创建导航栏和标题栏
+nav_bar = task_item.NavigationBar(root, w, h)
+title_bar = task_item.TitleBar(root, w, h)
 
-task_item.NavigationBar(root, w, h)
+# 启用标题栏拖动
+def enable_drag_for_frame(frame):
+    frame.bind("<ButtonPress-1>", start_move)
+    frame.bind("<ButtonRelease-1>", stop_move)
+    frame.bind("<B1-Motion>", do_move)
+
+enable_drag_for_frame(title_bar)
 
 def show_root():
     root.mainloop()
