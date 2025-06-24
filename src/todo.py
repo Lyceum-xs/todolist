@@ -146,3 +146,5 @@ def update_status_by_name(keyword, new_status):
         t.status = new_status
     save_tasks(task_list)
     print("已更新 " + str(len(matched)) + " 条任务状态为 " + new_status)
+
+# 重要度与ddl量化函数
