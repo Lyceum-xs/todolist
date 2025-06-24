@@ -27,13 +27,25 @@ def NavigationBar(root, max_width, max_height):
                    borderwidth=0,         # 无边框
                    padding=0,             # 无内边距
                    relief='flat')         # 平面样式
-   
 
     title = ttk.Label(nb, text = 'To Do List', style = 'Text.TLabel').place(x = 20, y = 30, width = w)
 
-    home_button = ttk.Button(nb, text = 'Home', style = 'Nav.TButton').place(x = 0, y = h / 15 * 3, width = w)
-    settings_button = ttk.Button(nb, text = 'Settings', style = 'Nav.TButton').place(x = 0, y = h / 15 * 4, width = w)
-    timer_button = ttk.Button(nb, text = 'Timer', style = 'Nav.TButton').place(x = 0, y = h / 15 * 5, width = w)
+    # 设置内容栏
+    con_bar = content_view.ContentBar(root, max_width, max_height)
+
+    home_button = ttk.Button(nb, text = 'Home', style = 'Nav.TButton')
+    home_button.place(x = 0, y = h / 15 * 3, width = w)
+    home_button.bind('<Button-1>', lambda e: content_view.Choose_content('Home', con_bar, max_width, max_height))
+    
+    settings_button = ttk.Button(nb, text = 'Settings', style = 'Nav.TButton')
+    settings_button.place(x = 0, y = h / 15 * 4, width = w)
+    settings_button.bind('<Button-1>', lambda e: content_view.Choose_content('Settings', con_bar, max_width, max_height))
+    
+    timer_button = ttk.Button(nb, text = 'Timer', style = 'Nav.TButton')
+    timer_button.place(x = 0, y = h / 15 * 5, width = w)
+    timer_button.bind('<Button-1>', lambda e: content_view.Choose_content('Timer', con_bar, max_width, max_height))
+
+    
 
     return nb
 
@@ -66,18 +78,3 @@ def TitleBar(root, max_width, max_height):
 
     return title_frame
 
-# Content Bar
-def ContentBar(root, max_width, max_height):
-    style = ttk.Style()
-
-    style.configure('Con.TFrame', background = '#C0C0C0')
-
-    content_frame = ttk.Frame(root, style = 'Con.TFrame')
-    x_place = int(max_width * 0.3)
-    y_place = 20
-    w = int(max_width - x_place)
-    h = int(max_height - y_place)
-
-    content_frame.place(x = x_place, y = y_place, width = w, height = h)
-
-    return content_frame
