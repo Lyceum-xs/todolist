@@ -30,9 +30,10 @@ def do_move(event):
     y = root.winfo_y() + deltay
     root.geometry(f"+{x}+{y}")
 
-# 创建导航栏和标题栏
+# 创建导航栏，标题栏和内容栏
 nav_bar = task_item.NavigationBar(root, w, h)
 title_bar = task_item.TitleBar(root, w, h)
+con_bar = task_item.ContentBar(root, w, h)
 
 # 启用标题栏拖动
 def enable_drag_for_frame(frame):

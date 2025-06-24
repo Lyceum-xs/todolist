@@ -1,6 +1,6 @@
 from tkinter import *
 from tkinter import ttk
-import tkinter
+import content_view
 
 # 导航栏--在根窗口中一直存在
 def NavigationBar(root, max_width, max_height):
@@ -65,3 +65,19 @@ def TitleBar(root, max_width, max_height):
     close_button.bind("<Button-1>", lambda e: root.destroy())
 
     return title_frame
+
+# Content Bar
+def ContentBar(root, max_width, max_height):
+    style = ttk.Style()
+
+    style.configure('Con.TFrame', background = '#C0C0C0')
+
+    content_frame = ttk.Frame(root, style = 'Con.TFrame')
+    x_place = int(max_width * 0.3)
+    y_place = 20
+    w = int(max_width - x_place)
+    h = int(max_height - y_place)
+
+    content_frame.place(x = x_place, y = y_place, width = w, height = h)
+
+    return content_frame
