@@ -10,7 +10,7 @@ max_width, max_height = root.maxsize()
 w = int(max_width * 0.5)
 h = int(max_height * 0.5)
 
-root.geometry(f'{w}x{h}')
+root.geometry(f'{w}x{h}+{int(w * 0.5)}+{int(h * 0.5)}')
 root.resizable(False, False)    # 设置窗口不可拉伸
 root.overrideredirect(True)    # 移除所有窗口修饰
 
@@ -33,7 +33,6 @@ def do_move(event):
 # 创建导航栏，标题栏和内容栏
 nav_bar = task_item.NavigationBar(root, w, h)
 title_bar = task_item.TitleBar(root, w, h)
-con_bar = task_item.ContentBar(root, w, h)
 
 # 启用标题栏拖动
 def enable_drag_for_frame(frame):
