@@ -1,22 +1,19 @@
-import tkinter as tk
 from tkinter import *
 from tkinter import ttk
+import task_item
 
 
-
-#init
-root = tk.Tk()
+root = Tk()
 root.title('To Do List')
-max_size = root.maxsize()   #get your windows' resolution 
-width, heigth = max_size
-root.geometry(f'{int(width*0.25)}x{int(heigth*0.5)}')   #calculation the width and height
+max_width, max_height = root.maxsize()
 
-root.resizable(False, False)    #set can't be sized
+w = int(max_width * 0.5)
+h = int(max_height * 0.5)
 
-#root.iconbitmap('')    #set logo
+root.geometry(f'{w}x{h}')
+root.resizable(False, False)
 
-root.configure(bg = '#E6E6E6')  #set background color
+task_item.NavigationBar(root, w, h)
 
-root.attributes('-topmost', True)   #set top
-
-root.mainloop() #begin main
+def show_root():
+    root.mainloop()
