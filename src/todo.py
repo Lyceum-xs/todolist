@@ -41,38 +41,41 @@ def list_tasks(tasks = None):
     for t in tasks:
         print_task(t)
 
-def update_status(task_id, new_status):
+def update_status(task_name, new_status):
     try:
         tasks = load_tasks()
     except:
         print("任务加载失败，无法更新状态")
         return
+    updated = False
     for t in tasks:
-        if t.id == task_id:
+        if t.name == task_name:
             t.status = new_status
-            try:
-                save_tasks(tasks)
-                print("任务 ID " + str(task_id) + " 状态已更新为 " + new_status)
-            except:
-                print("任务保存失败。")
-            return
-    print("未找到任务 ID:" + str(task_id))
+            updated = True
+    if not updated:
+        print("未找到任务 名称:" + task_name)
+        return
+    try:
+        save_tasks(tasks)
+        print("任务名 " + task_name + " 状态已更新为 " + new_status)
+    except:
+        print("任务保存失败")
 
-def delete_task(task_id):
+def delete_task(task_name):
     try:
         tasks = load_tasks()
     except:
         print("任务加载失败，无法删除")
         return
-    new_tasks = [t for t in tasks if t.id != task_id]
+    new_tasks = [t for t in tasks if t.name != task_name]
     if len(new_tasks) == len(tasks):
-        print("未找到任务 ID:" + str(task_id))
-    else:
-        try:
-            save_tasks(new_tasks)
-            print("任务 ID " + str(task_id) + " 已删除")
-        except:
-            print("任务保存失败。")
+        print("未找到任务 名称:" + task_name)
+        return
+    try:
+        save_tasks(new_tasks)
+        print("任务 " + task_name + " 已删除")
+    except:
+        print("任务保存失败。")
 
 def filter_tasks(is_urgent = None,
                  priority = None,
