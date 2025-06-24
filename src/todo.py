@@ -1,68 +1,145 @@
-#!/usr/bin/env python3
-# todo.py
 from database import load_tasks, save_tasks, generate_id
 from models import Task
 from datetime import datetime
-from typing import List, Optional
 
-def add_task(name: str, description: str = '', deadline: Optional[str] = None,
-             is_urgent: bool = False, priority: int = 3):
-    tasks = load_tasks()
+# 打印单个任务
+def print_task(t):
+    dl = t.deadline if t.deadline else '无'
+    info = "[" + str(t.id) + "] " + t.name + " | 状态:" + t.status \
+           + " | 截止:" + dl + " | 紧急:" + str(t.is_urgent) \
+           + " | 优先级:" + str(t.priority)
+    print(info)
+
+def add_task(name, description = '', deadline = None,
+             is_urgent = False, priority = 3):
+    try:
+        tasks = load_tasks()
+    except:
+        print("任务加载失败，无法添加")
+        return
     task_id = generate_id(tasks)
     task = Task(id=task_id, name=name, description=description,
                 deadline=deadline, status='未完成',
                 is_urgent=is_urgent, priority=priority)
     tasks.append(task)
-    save_tasks(tasks)
-    print(f"任务已添加：{task}")
+    try:
+        save_tasks(tasks)
+        print("任务已添加:" + str(task))
+    except:
+        print("任务保存失败")
 
-def list_tasks(tasks: List[Task] = None):
+def list_tasks(tasks = None):
     if tasks is None:
-        tasks = load_tasks()
+        try:
+            tasks = load_tasks()
+        except:
+            print("任务加载失败")
+            return
     if not tasks:
-        print("当前没有任何任务。")
+        print("当前没有任何任务")
         return
     for t in tasks:
-        dl = t.deadline or '无'
-        print(f"[{t.id}] {t.name} - {t.status} - 截止: {dl} - 紧急: {t.is_urgent} - 优先级: {t.priority}")
+        print_task(t)
 
-def update_status(task_id: int, new_status: str):
-    tasks = load_tasks()
+def update_status(task_id, new_status):
+    try:
+        tasks = load_tasks()
+    except:
+        print("任务加载失败，无法更新状态")
+        return
     for t in tasks:
         if t.id == task_id:
             t.status = new_status
-            save_tasks(tasks)
-            print(f"任务 ID {task_id} 状态已更新为 {new_status}")
+            try:
+                save_tasks(tasks)
+                print("任务 ID " + str(task_id) + " 状态已更新为 " + new_status)
+            except:
+                print("任务保存失败。")
             return
-    print(f"未找到任务 ID：{task_id}")
+    print("未找到任务 ID:" + str(task_id))
 
-def delete_task(task_id: int):
-    tasks = load_tasks()
+def delete_task(task_id):
+    try:
+        tasks = load_tasks()
+    except:
+        print("任务加载失败，无法删除")
+        return
     new_tasks = [t for t in tasks if t.id != task_id]
     if len(new_tasks) == len(tasks):
-        print(f"未找到任务 ID：{task_id}")
+        print("未找到任务 ID:" + str(task_id))
     else:
-        save_tasks(new_tasks)
-        print(f"任务 ID {task_id} 已删除")
+        try:
+            save_tasks(new_tasks)
+            print("任务 ID " + str(task_id) + " 已删除")
+        except:
+            print("任务保存失败。")
 
-def filter_tasks(is_urgent: Optional[bool] = None,
-                 priority: Optional[int] = None,
-                 status: Optional[str] = None,
-                 deadline_before: Optional[str] = None):
-    tasks = load_tasks()
-    result = tasks
+def filter_tasks(is_urgent = None,
+                 priority = None,
+                 status = None,
+                 deadline_before = None):
+    try:
+        task_list = load_tasks()
+    except:
+        print("任务加载失败，无法筛选")
+        return
+    filtered = task_list
     if is_urgent is not None:
-        result = [t for t in result if t.is_urgent == is_urgent]
+        filtered = [t for t in filtered if t.is_urgent == is_urgent]
     if priority is not None:
-        result = [t for t in result if t.priority == priority]
+        filtered = [t for t in filtered if t.priority == priority]
     if status is not None:
-        result = [t for t in result if t.status == status]
+        filtered = [t for t in filtered if t.status == status]
     if deadline_before:
         try:
             cutoff = datetime.strptime(deadline_before, '%Y-%m-%d').date()
-            result = [t for t in result
-                      if t.deadline and datetime.strptime(t.deadline, '%Y-%m-%d').date() <= cutoff]
+            filtered = [t for t in filtered
+                        if t.deadline and datetime.strptime(t.deadline, '%Y-%m-%d').date() <= cutoff]
         except ValueError:
-            print("截止日期格式错误，应为 YYYY-MM-DD。")
-    print(f"筛选结果（共 {len(result)} 条）：")
-    list_tasks(result)
+            print("截止日期格式错误，应为 YYYY-MM-DD")
+    print("筛选结果（共 " + str(len(filtered)) + " 条）:")
+    for t in filtered:
+        print_task(t)
+
+# 根据任务名称搜索任务
+def search_tasks(keyword):
+    try:
+        task_list = load_tasks()
+    except:
+        print("任务加载失败，无法搜索")
+        return
+    results = [t for t in task_list if keyword in t.name]
+    print("搜索完成，共找到 " + str(len(results)) + " 条任务:")
+    for t in results:
+        print_task(t)
+
+# 根据任务名称删除任务
+def delete_tasks_by_name(keyword):
+    try:
+        task_list = load_tasks()
+    except:
+        print("任务加载失败，无法删除")
+        return
+    remaining = [t for t in task_list if keyword not in t.name]
+    count = len(task_list) - len(remaining)
+    if count == 0:
+        print("未找到匹配的任务，关键字：" + keyword)
+    else:
+        save_tasks(remaining)
+        print("已删除 " + str(count) + " 条任务，关键字:" + keyword)
+
+# 根据任务名称更新任务状态
+def update_status_by_name(keyword, new_status):
+    try:
+        task_list = load_tasks()
+    except:
+        print("任务加载失败，无法更新状态")
+        return
+    matched = [t for t in task_list if keyword in t.name]
+    if not matched:
+        print("未找到匹配的任务，关键字:" + keyword)
+        return
+    for t in matched:
+        t.status = new_status
+    save_tasks(task_list)
+    print("已更新 " + str(len(matched)) + " 条任务状态为 " + new_status)
