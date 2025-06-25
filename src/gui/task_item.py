@@ -35,15 +35,15 @@ def NavigationBar(root, max_width, max_height):
 
     home_button = ttk.Button(nb, text = 'Home', style = 'Nav.TButton')
     home_button.place(x = 0, y = h / 15 * 3, width = w)
-    home_button.bind('<Button-1>', lambda e: content_view.Choose_content('Home', con_bar, max_width, max_height))
+    home_button.bind('<Button-1>', lambda e: content_view.Choose_content('Home', con_bar, max_width - w, max_height - 20))
     
     settings_button = ttk.Button(nb, text = 'Settings', style = 'Nav.TButton')
     settings_button.place(x = 0, y = h / 15 * 4, width = w)
-    settings_button.bind('<Button-1>', lambda e: content_view.Choose_content('Settings', con_bar, max_width, max_height))
+    settings_button.bind('<Button-1>', lambda e: content_view.Choose_content('Settings', con_bar, max_width - w, max_height - 20))
     
     timer_button = ttk.Button(nb, text = 'Timer', style = 'Nav.TButton')
     timer_button.place(x = 0, y = h / 15 * 5, width = w)
-    timer_button.bind('<Button-1>', lambda e: content_view.Choose_content('Timer', con_bar, max_width, max_height))
+    timer_button.bind('<Button-1>', lambda e: content_view.Choose_content('Timer', con_bar, max_width - w, max_height - 20))
 
     
 

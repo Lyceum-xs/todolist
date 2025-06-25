@@ -5,8 +5,11 @@ import get_data
 
 def Home(root, max_width, max_height):
     print('This is home now')
+    
+    # ËÑË÷¿ò
+    #-------------------------- begin ------------------------------
     target = tk.StringVar()
-    target.set('please entry the target')
+    target.set('Search Task')
 
     search_bar = tk.Entry(root, textvariable = target, font = ('consolas', 12))
     search_bar.place(width = 400, height = 30, x = 10, y = 10)
@@ -20,12 +23,45 @@ def Home(root, max_width, max_height):
                    padding=0,
                    relief='flat')
 
-    def get():
-        print('Get entry')
+    def search():
         value = target.get()
+        print(f'Get entry: {value}')
 
-    search_button = ttk.Button(root, command = get, text = 'search', style = 'Home.TButton')
+    search_button = ttk.Button(root, command = search, text = 'search', style = 'Home.TButton')
     search_button.place(width = 60, height = 30, x = 411, y = 10)
+
+    style.configure('Meau.TFrame', background = '#FFFFFF')
+    menu_bar = ttk.Frame(root, style = 'Menu.TFrame')
+    menu_bar.place(x = 0, y = 50, width = max_width, height = 25)
+    #--------------------------- End --------------------------
+
+    # ÅÅÐò¿ò
+    #-------------------------- Begin -------------------------
+    sort_basis = ['Submission Date', 'Due Date', 'Urgency']
+    s = tk.StringVar()
+    
+    sort_bar = ttk.Combobox(menu_bar, width = 15, state = 'readonly', textvariable = s, values = sort_basis, font = ('consolas', 12))
+    sort_bar.grid(row = 0, column = 0)
+
+    sort_bar.set('Sort Basis')
+
+    def select(event):
+        print(f'Get sort basis: {s.get()}')
+
+    sort_bar.bind('<<ComboboxSelected>>', select)
+    #--------------------------- End --------------------------
+
+    # Add°´Å¥
+    #-------------------------- Begin -------------------------
+    def add():
+        print(f'task is adding...')
+
+
+
+    add_button = ttk.Button(menu_bar, command = add, text = '+ Add', style = 'Home.TButton')
+    add_button.place(x = max_width - 50, y = 0, width = 50, height = 25)
+    #--------------------------- End --------------------------
+
 
 def Settings(root, max_width, max_height):
     print('This is settings now')
