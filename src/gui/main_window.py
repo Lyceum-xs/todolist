@@ -11,10 +11,10 @@ w = int(max_width * 0.5)
 h = int(max_height * 0.5)
 
 root.geometry(f'{w}x{h}+{int(w * 0.5)}+{int(h * 0.5)}')
-root.resizable(False, False)    # ÉèÖÃ´°¿Ú²»¿ÉÀ­Éì
-root.overrideredirect(True)    # ÒÆ³ıËùÓĞ´°¿ÚĞŞÊÎ
+root.resizable(False, False)    # è®¾ç½®çª—å£ä¸å¯æ‹‰ä¼¸
+root.overrideredirect(True)    # ç§»é™¤æ‰€æœ‰çª—å£ä¿®é¥°
 
-# Ìí¼Ó´°¿ÚÍÏ¶¯¹¦ÄÜ
+# æ·»åŠ çª—å£æ‹–åŠ¨åŠŸèƒ½
 def start_move(event):
     root.x = event.x
     root.y = event.y
@@ -30,11 +30,11 @@ def do_move(event):
     y = root.winfo_y() + deltay
     root.geometry(f"+{x}+{y}")
 
-# ´´½¨µ¼º½À¸£¬±êÌâÀ¸ºÍÄÚÈİÀ¸
+# åˆ›å»ºå¯¼èˆªæ ï¼Œæ ‡é¢˜æ å’Œå†…å®¹æ 
 nav_bar = task_item.NavigationBar(root, w, h)
 title_bar = task_item.TitleBar(root, w, h)
 
-# ÆôÓÃ±êÌâÀ¸ÍÏ¶¯
+# å¯ç”¨æ ‡é¢˜æ æ‹–åŠ¨
 def enable_drag_for_frame(frame):
     frame.bind("<ButtonPress-1>", start_move)
     frame.bind("<ButtonRelease-1>", stop_move)
