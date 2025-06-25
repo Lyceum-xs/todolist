@@ -1,0 +1,56 @@
+# pyproject.toml
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+[project]
+name = "todolist-1"
+version = "0.1.0"
+description = "A simple todo list application."
+authors = [
+    { name="Your Name", email="your.email@example.com" }
+]
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent"
+]
+[tool.ruff]
+select = ["E", "F", "W"]
+ignore = []
+line-length = 88
+exclude = [
+    ".git",
+    "__pycache__",
+    "build",
+    "dist",
+    ".venv",
+    "env",
+    "venv"
+]
+# 允许自动修复 (用于 `ruff --fix`)
+fixable = [
+    "A", "B", "C", "D", "E", "F", "G", "I", "N", "Q", "S", "T", "W", "ANN", "ARG",
+    "BLE", "COM", "DJ", "DTZ", "EM", "ERA", "EXE", "FBT", "ICN", "INP", "ISC", "NPY", "PD",
+    "PGH", "PIE", "PL", "PT", "PTH", "PYI", "RET", "RSE", "RUF", "SIM", "SLF", "TCH", "TID",
+    "TRY", "UP", "YTT"
+]
+unfixable = []
+
+[tool.ruff.format]
+# Ruff Formatter 配置 (类似 Black)
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+[tool.ruff.lint]
+# Lint 特定配置 (如果需要)
+
+[tool.ruff.lint.isort]
+# isort 相关配置 (Ruff 内置)
+known-first-party = ["todolist"] # 
+
