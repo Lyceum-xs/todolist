@@ -1,2 +1,7 @@
-# Visual Studio 临时文件
+# Visual Studio 锟斤拷时锟侥硷拷
 .vs/
+.venv/
+
+# Python
+__pycache__/
+*.py[cod]
