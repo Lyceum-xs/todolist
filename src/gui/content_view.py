@@ -1,14 +1,20 @@
-from calendar import Day
 from tkinter import *
 from tkinter import ttk
 import tkinter as tk
-from token import COMMA
-from tokenize import String
 import get_data
+
+# clear all widgets in a frame
+#-------------------------------- Begin -------------------------------
+def clear_frame(frame):
+    for widget in frame.winfo_children():
+        widget.destroy()
+#--------------------------------- End --------------------------------
+
 
 # home content
 #-------------------------------- begin -------------------------------
 def Home(root, max_width, max_height):
+    clear_frame(root)   # initialize content frame
     print('This is home now')
     
 
@@ -147,6 +153,7 @@ def Home(root, max_width, max_height):
 # settings content
 #-------------------------------- begin -------------------------------
 def Settings(root, max_width, max_height):
+    clear_frame(root)
     print('This is settings now')
 #--------------------------------- End --------------------------------
 
@@ -154,6 +161,7 @@ def Settings(root, max_width, max_height):
 # timer content
 #-------------------------------- begin -------------------------------
 def Timer(root, max_width, max_height):
+    clear_frame(root)
     print('This is timer now')
 #--------------------------------- End --------------------------------
 
