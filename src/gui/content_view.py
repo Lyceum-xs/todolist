@@ -1,6 +1,9 @@
+from calendar import Day
 from tkinter import *
 from tkinter import ttk
 import tkinter as tk
+from token import COMMA
+from tokenize import String
 import get_data
 
 # home content
@@ -63,7 +66,7 @@ def Home(root, max_width, max_height):
 
         window = tk.Toplevel(root)
         window.title('Add New Task')
-        window.geometry(f'{max_width}x{max_height}+{max_width}+{int(max_height * 0.5)}')
+        window.geometry(f'{max_width}x{int(max_height * 0.5)}+{max_width}+{int(max_height * 0.5)}')
 
         taskname = tk.StringVar()
 
@@ -72,8 +75,68 @@ def Home(root, max_width, max_height):
         input_name = tk.Entry(window, textvariable = taskname, font = ('consolas', 14))
         input_name.place(x = int(max_width * 0.25 + 40), y = int(max_height * 0.10), width = int(max_width * 0.5), height = 35)
 
+        style.configure('Window.TLabel', font = ('consolas', 12))
+
+        year_label = ttk.Label(window, text = 'Year', style = 'Window.TLabel')
+        year_label.place(width = 60, height = 25, x = 60, y = int(max_height * 0.10 + 35 + 25))
+
+        month_label = ttk.Label(window, text = 'Month', style = 'Window.TLabel')
+        month_label.place(width = 60, height = 25, x = 160, y = int(max_height * 0.10 + 35 + 25))
+
+        day_label = ttk.Label(window, text = 'Day', style = 'Window.TLabel')
+        day_label.place(width = 60, height = 25, x = 260, y = int(max_height * 0.10 + 35 + 25))
+
+        hour_label = ttk.Label(window, text = 'Hour', style = 'Window.TLabel')
+        hour_label.place(width = 60, height = 25, x = 360, y = int(max_height * 0.10 + 35 + 25))
+
+        mintue_label = ttk.Label(window, text = 'Mintue', style = 'Window.TLabel')
+        mintue_label.place(width = 60, height = 25, x = 460, y = int(max_height * 0.10 + 35 + 25))
+
+        time = get_data.gettime()
+        year = time['year']
+        month = time['month']
+        day = time['day']
+        hour = time['hour']
+        mintue = time['mintue']
+
+        dl_year = tk.StringVar()
+        dl_month = tk.StringVar()
+        dl_day = tk.StringVar()
+        dl_hour = tk.StringVar()
+        dl_mintue = tk.StringVar()
+
+        year_spinbox = tk.Spinbox(window, from_ = year, to = 3000, textvariable = dl_year)
+        year_spinbox.place(width = 60, height = 40, x = 60, y = int(max_height * 0.10 + 35 + 55))
+
+        month_spinbox = tk.Spinbox(window, from_ = 1, to = 12, textvariable = dl_month)
+        month_spinbox.place(width = 60, height = 40, x = 160, y = int(max_height * 0.10 + 35 + 55))
+
+        day_spinbox = tk.Spinbox(window, from_ = 1, to = 31, textvariable = dl_day)
+        day_spinbox.place(width = 60, height = 40, x = 260, y = int(max_height * 0.10 + 35 + 55))
+
+        hour_spinbox = tk.Spinbox(window, from_ = 0, to = 23, textvariable = dl_hour)
+        hour_spinbox.place(width = 60, height = 40, x = 360, y = int(max_height * 0.10 + 35 + 55))
+
+        mintue_spinbox = tk.Spinbox(window, from_ = 0, to = 59, textvariable = dl_mintue)
+        mintue_spinbox.place(width = 60, height = 40, x = 460, y = int(max_height * 0.10 + 35 + 55))
+
+
+        def close():
+            window.destroy()
+
+        def cancel():
+            print('Addition is canceled, no submission')
+            close()
+
         def submit():
-            print(f'Get Task: {taskname.get()}--submit time: {0}--due time: {0}')
+            print(f'Submit succeed:[taskname:{taskname.get()},submit time:{year}/{month}/{day}/{hour}/{mintue},due time:{dl_year.get()}/{dl_month.get()}/{dl_day.get()}/{dl_hour.get()}/{dl_mintue.get()}]')
+            close()
+        
+        cancel_button = ttk.Button(window, command = cancel, text = 'cancel', style = 'Home.TButton')
+        cancel_button.place(width = 80, height = 25, x = max_width - 180, y = int(max_height * 0.5 - 30))
+
+        submit_button = ttk.Button(window, command = submit, text = 'submit', style = 'Home.TButton')
+        submit_button.place(width = 80, height = 25, x = max_width - 90, y = int(max_height * 0.5 - 30))
 
     add_button = ttk.Button(menu_bar, command = add, text = '+ Add', style = 'Home.TButton')
     add_button.place(x = max_width - 50, y = 0, width = 50, height = 25)
