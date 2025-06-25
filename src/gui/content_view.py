@@ -163,6 +163,122 @@ def Settings(root, max_width, max_height):
 def Timer(root, max_width, max_height):
     clear_frame(root)
     print('This is timer now')
+
+    style = ttk.Style()
+    style.configure('Timer.TLabel', font=('consolas', 28))
+    style.configure('Timer.TButton', font=('consolas', 12), padding=6)
+    style.configure('Timer.TFrame', background='#f5f5f5')
+
+    timer_frame = ttk.Frame(root, style='Timer.TFrame')
+    timer_frame.place(relx=0.5, rely=0.5, anchor='center', width=350, height=300)
+
+    # 状态变量
+    hour_var = tk.StringVar(value='0')
+    min_var = tk.StringVar(value='25')
+    sec_var = tk.StringVar(value='0')
+    running = tk.BooleanVar(value=False)
+    paused = tk.BooleanVar(value=False)
+    remaining_sec = [0]  # 用列表包裹以便内部修改
+
+    # 时间选择区
+    tk.Label(timer_frame, text='Hour', font=('consolas', 12), bg='#f5f5f5').place(x=20, y=20)
+    hour_spin = tk.Spinbox(timer_frame, from_=0, to=23, width=4, textvariable=hour_var, font=('consolas', 14), state='normal')
+    hour_spin.place(x=20, y=50)
+
+    tk.Label(timer_frame, text='Minute', font=('consolas', 12), bg='#f5f5f5').place(x=110, y=20)
+    min_spin = tk.Spinbox(timer_frame, from_=0, to=59, width=4, textvariable=min_var, font=('consolas', 14), state='normal')
+    min_spin.place(x=110, y=50)
+
+    tk.Label(timer_frame, text='Second', font=('consolas', 12), bg='#f5f5f5').place(x=200, y=20)
+    sec_spin = tk.Spinbox(timer_frame, from_=0, to=59, width=4, textvariable=sec_var, font=('consolas', 14), state='normal')
+    sec_spin.place(x=200, y=50)
+
+    # 时间显示
+    def format_time(h, m, s):
+        return f"{int(h):02d}:{int(m):02d}:{int(s):02d}"
+
+    timer_label = ttk.Label(timer_frame, text=format_time(hour_var.get(), min_var.get(), sec_var.get()), style='Timer.TLabel')
+    timer_label.place(x=60, y=110, width=220, height=50)
+
+    # 更新显示
+    def update_display():
+        timer_label.config(text=format_time(hour_var.get(), min_var.get(), sec_var.get()))
+
+    # 切换工作/休息
+    def set_work():
+        hour_var.set('0')
+        min_var.set('25')
+        sec_var.set('0')
+        update_display()
+
+    def set_break():
+        hour_var.set('0')
+        min_var.set('5')
+        sec_var.set('0')
+        update_display()
+
+    # 倒计时逻辑
+    timer_id = [None]  # 用于取消 after
+
+    def countdown():
+        if not running.get() or paused.get():
+            return
+        if remaining_sec[0] <= 0:
+            timer_label.config(text="Time's up!")
+            running.set(False)
+            return
+        h = remaining_sec[0] // 3600
+        m = (remaining_sec[0] % 3600) // 60
+        s = remaining_sec[0] % 60
+        timer_label.config(text=format_time(h, m, s))
+        remaining_sec[0] -= 1
+        timer_id[0] = root.after(1000, countdown)
+
+    def start_timer():
+        if running.get():
+            return
+        total_sec = int(hour_var.get()) * 3600 + int(min_var.get()) * 60 + int(sec_var.get())
+        if total_sec == 0:
+            return
+        remaining_sec[0] = total_sec
+        running.set(True)
+        paused.set(False)
+        hour_spin.config(state='disabled')
+        min_spin.config(state='disabled')
+        sec_spin.config(state='disabled')
+        countdown()
+
+    def pause_timer():
+        if running.get() and not paused.get():
+            paused.set(True)
+            if timer_id[0]:
+                root.after_cancel(timer_id[0])
+        elif running.get() and paused.get():
+            paused.set(False)
+            countdown()
+
+    def reset_timer():
+        running.set(False)
+        paused.set(False)
+        if timer_id[0]:
+            root.after_cancel(timer_id[0])
+        hour_spin.config(state='normal')
+        min_spin.config(state='normal')
+        sec_spin.config(state='normal')
+        update_display()
+        timer_label.config(text=format_time(hour_var.get(), min_var.get(), sec_var.get()))
+
+    # 按钮区
+    ttk.Button(timer_frame, text='工作', style='Timer.TButton', command=set_work).place(x=30, y=180, width=70)
+    ttk.Button(timer_frame, text='休息', style='Timer.TButton', command=set_break).place(x=110, y=180, width=70)
+    ttk.Button(timer_frame, text='开始', style='Timer.TButton', command=start_timer).place(x=190, y=180, width=70)
+    ttk.Button(timer_frame, text='暂停/继续', style='Timer.TButton', command=pause_timer).place(x=30, y=230, width=110)
+    ttk.Button(timer_frame, text='重置', style='Timer.TButton', command=reset_timer).place(x=160, y=230, width=100)
+
+    # 监听时间变化自动更新显示
+    hour_var.trace_add('write', lambda *args: update_display())
+    min_var.trace_add('write', lambda *args: update_display())
+    sec_var.trace_add('write', lambda *args: update_display())
 #--------------------------------- End --------------------------------
 
 
