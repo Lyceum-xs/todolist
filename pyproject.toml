@@ -52,5 +52,5 @@ line-ending = "auto"
 
 [tool.ruff.lint.isort]
 # isort 相关配置 (Ruff 内置)
-known-first-party = ["todolist"] # 
+known-first-party = ["todolist"]
 
