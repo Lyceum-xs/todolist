@@ -1,7 +1,140 @@
-# Visual Studio ��ʱ�ļ�
+### VS ###
 .vs/
-.venv/
+*.sqlite
 
-# Python
+### Python ###
+# Byte-compiled and cached files
 __pycache__/
-*.py[cod]".vs/" 
+*.py[cod]
+*$py.class
+*.so  # C extensions
+
+### Build and distribution ###
+build/
+dist/
+*.egg-info/
+*.egg
+.installed.cfg
+pip-wheel-metadata/
+share/python-wheels/
+wheels/
+sdist/
+parts/
+develop-eggs/
+eggs/
+.eggs/
+lib/
+lib64/
+var/
+downloads/
+MANIFEST
+*.manifest  # PyInstaller
+*.spec  # PyInstaller
+
+### Environments ###
+.env
+.venv
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+.Python
+
+### Testing/coverage ###
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+htmlcov/
+.tox/
+.nox/
+.pytest_cache/
+cover/
+.hypothesis/
+
+### Databases ###
+*.sqlite3
+*.sqlite3-journal
+*.log  # App logs
+
+### OS generated ###
+.DS_Store
+Thumbs.db
+._*
+
+### Editor/IDE ###
+# VS Code (保留必要配置)
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# PyCharm
+.idea/
+.ropeproject
+.spyderproject
+.spyproject
+
+# Jupyter
+.ipynb_checkpoints/
+profile_default/
+ipython_config.py
+
+### Package managers ###
+__pypackages__/
+.python-version
+Pipfile
+
+### Static analysis ###
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+.pytype/
+cython_debug/  # Cython symbols
+.ruff_cache/
+
+### Misc ###
+celerybeat-schedule
+celerybeat.pid
+*.mo
+*.pot
+*.po
+.scrapy
+instance/
+.webassets-cache
+site/  # mkdocs
+*.sage.py
+
+### Visual Studio ###
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+*.aps
+*.ncb
+*.opendb
+*.opensdf
+*.sdf
+*.cachefile
+*.VC.db
+*.VC.VC.opendb
+
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
