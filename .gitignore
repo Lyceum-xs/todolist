@@ -1,3 +1,7 @@
+### VS ###
+.vs/
+*.sqlite
+
 ### Python ###
 # Byte-compiled and cached files
 __pycache__/

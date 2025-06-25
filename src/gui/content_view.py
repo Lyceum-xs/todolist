@@ -3,10 +3,13 @@ from tkinter import ttk
 import tkinter as tk
 import get_data
 
+# home content
+#-------------------------------- begin -------------------------------
 def Home(root, max_width, max_height):
     print('This is home now')
     
-    # ËÑË÷¿ò
+
+    # Search Bar
     #-------------------------- begin ------------------------------
     target = tk.StringVar()
     target.set('Search Task')
@@ -35,7 +38,8 @@ def Home(root, max_width, max_height):
     menu_bar.place(x = 0, y = 50, width = max_width, height = 25)
     #--------------------------- End --------------------------
 
-    # ÅÅÐò¿ò
+
+    # Sort Bar
     #-------------------------- Begin -------------------------
     sort_basis = ['Submission Date', 'Due Date', 'Urgency']
     s = tk.StringVar()
@@ -51,24 +55,48 @@ def Home(root, max_width, max_height):
     sort_bar.bind('<<ComboboxSelected>>', select)
     #--------------------------- End --------------------------
 
-    # Add°´Å¥
+
+    # Add Button
     #-------------------------- Begin -------------------------
     def add():
         print(f'task is adding...')
 
+        window = tk.Toplevel(root)
+        window.title('Add New Task')
+        window.geometry(f'{max_width}x{max_height}+{max_width}+{int(max_height * 0.5)}')
 
+        taskname = tk.StringVar()
+
+        ttk.Label(window, text = 'Task Name:', font = ('consolas', 14)).place(x = int(max_width * 0.25 - 80), y = int(max_height * 0.10),
+                                                                             width = 160, height = 35)
+        input_name = tk.Entry(window, textvariable = taskname, font = ('consolas', 14))
+        input_name.place(x = int(max_width * 0.25 + 40), y = int(max_height * 0.10), width = int(max_width * 0.5), height = 35)
+
+        def submit():
+            print(f'Get Task: {taskname.get()}--submit time: {0}--due time: {0}')
 
     add_button = ttk.Button(menu_bar, command = add, text = '+ Add', style = 'Home.TButton')
     add_button.place(x = max_width - 50, y = 0, width = 50, height = 25)
     #--------------------------- End --------------------------
+#--------------------------------- End --------------------------------
 
 
+# settings content
+#-------------------------------- begin -------------------------------
 def Settings(root, max_width, max_height):
     print('This is settings now')
+#--------------------------------- End --------------------------------
 
+
+# timer content
+#-------------------------------- begin -------------------------------
 def Timer(root, max_width, max_height):
     print('This is timer now')
+#--------------------------------- End --------------------------------
 
+
+# choose content
+#-------------------------------- begin -------------------------------
 def Choose_content(name, root, max_width, max_height):
     if name == 'Home':
         Home(root, max_width, max_height)
@@ -76,8 +104,11 @@ def Choose_content(name, root, max_width, max_height):
         Settings(root, max_width, max_height)
     elif name == 'Timer':
         Timer(root, max_width, max_height)
+#--------------------------------- End --------------------------------
+
 
 # Content Bar
+#-------------------------------- begin -------------------------------
 def ContentBar(root, max_width, max_height):
     style = ttk.Style()
 
@@ -92,3 +123,4 @@ def ContentBar(root, max_width, max_height):
     content_frame.place(x = x_place, y = y_place, width = w, height = h)
 
     return content_frame
+#--------------------------------- End --------------------------------

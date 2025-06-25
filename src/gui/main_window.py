@@ -11,10 +11,12 @@ w = int(max_width * 0.5)
 h = int(max_height * 0.5)
 
 root.geometry(f'{w}x{h}+{int(w * 0.5)}+{int(h * 0.5)}')
-root.resizable(False, False)    # 设置窗口不可拉伸
-root.overrideredirect(True)    # 移除所有窗口修饰
+root.resizable(False, False)    # set the window to be non-resizable
+root.overrideredirect(True)    # remove all window decorations
 
-# 添加窗口拖动功能
+
+# add window dragging functionality
+#----------------------- Begin ------------------------
 def start_move(event):
     root.x = event.x
     root.y = event.y
@@ -29,18 +31,25 @@ def do_move(event):
     x = root.winfo_x() + deltax
     y = root.winfo_y() + deltay
     root.geometry(f"+{x}+{y}")
+#------------------------ End -------------------------
 
-# 创建导航栏，标题栏和内容栏
+
+# create a navigation bar, a title bar and a content bar
+#----------------------- Begin ------------------------
 nav_bar = task_item.NavigationBar(root, w, h)
 title_bar = task_item.TitleBar(root, w, h)
+#------------------------ End -------------------------
 
-# 启用标题栏拖动
+
+# enable title bar dragging
+#----------------------- Begin ------------------------
 def enable_drag_for_frame(frame):
     frame.bind("<ButtonPress-1>", start_move)
     frame.bind("<ButtonRelease-1>", stop_move)
     frame.bind("<B1-Motion>", do_move)
 
 enable_drag_for_frame(title_bar)
+#------------------------ End -------------------------
 
 def show_root():
     root.mainloop()
