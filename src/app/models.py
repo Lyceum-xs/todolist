@@ -13,13 +13,15 @@ class Task(Base):
     due_date: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     completed: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     importance: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
-    urgency: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    urgent: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
     parent_id: Mapped[int | None] = mapped_column(ForeignKey("tasks.id"))
     subtasks: Mapped[list["Task"]] = relationship(
         "Task",
         backref="parent",
-        remote_side=[id]
+        remote_side=[id],
+        single_parent=True,
+        cascade="all, delete-orphan" #删除父任务时，其所有子任务会被级联删除
     )
 
     created_at: Mapped[datetime] = mapped_column(
@@ -39,8 +41,8 @@ class Task(Base):
         urgent_weight = 0.45
         due_date_weight = 0.1
 
-        urgency_value = 1 if self.urgency else 0
-        importance_value = 1 if self.importance else 0
+        urgent_value = 1 if self.urgent else 0
+        importance_value = 1 if self.important else 0
 
         # 处理截止日期属性，如果有截止日期，计算距离当前时间的天数；没有则设为一个较大值
         if self.due_date:
@@ -52,7 +54,7 @@ class Task(Base):
 
         priority = (
             importance_value * importance_weight +
-            urgency_value * urgent_weight +
+            urgent_value * urgent_weight +
             due_date_value * due_date_weight
         )
         return priority

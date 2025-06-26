@@ -6,7 +6,7 @@ class TaskBase(BaseModel):
     description: str | None = None
     due_date: datetime | None = None
     importance: bool = False
-    urgency: bool = False
+    urgent: bool = False
     parent_id: int | None = None
 
     class Config:
@@ -20,9 +20,9 @@ class TaskUpdate(BaseModel):
     name: str | None = Field(None, max_length=255)
     description: str | None = None
     due_date: datetime | None = None
-    completed: bool | None = None
-    importance: bool | None = None
-    urgency: bool | None = None
+    completed: bool | None = False
+    importance: bool | None = False
+    urgent: bool | None = False
 
     class Config:
         title = "任务更新"
