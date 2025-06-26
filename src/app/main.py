@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from .routers import habits 
 from .db import create_tables
 from .routers import tasks
 
@@ -27,6 +28,7 @@ app.add_middleware(
 )
 
 app.include_router(tasks.router)
+app.include_router(habits.router)
 
 @app.on_event("startup")
 def init_db():

@@ -1,5 +1,5 @@
-from datetime import datetime, timezone
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String
+from datetime import datetime, timezone , date
+from sqlalchemy import Boolean, DateTime, Date , ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .db import Base
@@ -58,3 +58,26 @@ class Task(Base):
             due_date_value * due_date_weight
         )
         return priority
+
+class Habit(Base):
+    __tablename__ = "habits"
+
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    name: Mapped[str] = mapped_column(String(128), unique=True, nullable=False)
+    # 重复周期（天数），默认 1 = 每天
+    interval: Mapped[int] = mapped_column(Integer, default=1, nullable=False)
+
+    logs: Mapped[list["HabitLog"]] = relationship(
+        "HabitLog", back_populates="habit", cascade="all, delete-orphan"
+    )
+
+
+class HabitLog(Base):
+    __tablename__ = "habit_logs"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    habit_id: Mapped[int] = mapped_column(ForeignKey("habits.id"), nullable=False)
+    date: Mapped[date] = mapped_column(Date, nullable=False)
+    done: Mapped[bool] = mapped_column(Boolean, default=True)
+
+    habit: Mapped["Habit"] = relationship("Habit", back_populates="logs")
