@@ -171,7 +171,6 @@ def Settings(root, max_width, max_height):
     print('This is settings now')
 #--------------------------------- End --------------------------------
 
-
 # timer content
 #-------------------------------- begin -------------------------------
 def Timer(root, max_width, max_height):
@@ -192,7 +191,7 @@ def Timer(root, max_width, max_height):
     error_occurred = [False]
     current_mode = tk.StringVar(value="work")
 
-    # 模式与设置时间（默认值，用户调整后覆盖）
+    # 模式与设置时间
     mode_settings = {
         "work": {"hour": 0, "min": 25, "sec": 0},
         "break": {"hour": 0, "min": 5, "sec": 0}
@@ -275,7 +274,6 @@ def Timer(root, max_width, max_height):
     sec_var.trace_add('write', lambda *args: update_display())
 
     def save_current_settings():
-        """保存当前模式的时间设置"""
         current = current_mode.get()
         mode_settings[current] = {
             "hour": int(hour_var.get()),
@@ -284,7 +282,6 @@ def Timer(root, max_width, max_height):
         }
 
     def load_mode_settings(mode):
-        """加载模式设置时间"""
         settings = mode_settings[mode]
         hour_var.set(settings["hour"])
         min_var.set(settings["min"])
@@ -295,16 +292,39 @@ def Timer(root, max_width, max_height):
     btn_frame1.pack(pady=10)
 
     def set_work():
-        """切换到工作模式并加载设置"""
+        """仅在非计时状态下允许切换模式"""
+        if running.get():
+            mode_display.config(text="计时中，无法切换模式", fg="red")
+            return
         current_mode.set("work")
         load_mode_settings("work")
         mode_display.config(text="工作模式", fg="#007ACC")
 
     def set_break():
-        """切换到休息模式并加载设置"""
+        """仅在非计时状态下允许切换模式"""
+        if running.get():
+            mode_display.config(text="计时中，无法切换模式", fg="red")
+            return
         current_mode.set("break")
         load_mode_settings("break")
         mode_display.config(text="休息模式", fg="#E64A19")
+
+    def reset_timer():
+        running.set(False)
+        paused.set(False)
+        if timer_id[0]:
+            root.after_cancel(timer_id[0])
+        hour_spin.config(state='normal')
+        min_spin.config(state='normal')
+        sec_spin.config(state='normal')
+        current = current_mode.get()
+        load_mode_settings(current)
+        timer_label.config(fg="black")
+        # 重置时恢复模式提示
+        if current == "work":
+            mode_display.config(text="工作模式", fg="#007ACC")
+        else:
+            mode_display.config(text="休息模式", fg="#E64A19")
 
     def countdown():
         if not running.get() or paused.get(): return
@@ -320,7 +340,6 @@ def Timer(root, max_width, max_height):
         timer_id[0] = root.after(1000, countdown)
 
     def start_timer():
-        """开始计时并保存当前模式设置"""
         if running.get(): return
         validate_hour(hour_var.get())
         validate_minute(min_var.get())
@@ -328,7 +347,7 @@ def Timer(root, max_width, max_height):
         if error_occurred[0]: return
         total = int(hour_var.get())*3600 + int(min_var.get())*60 + int(sec_var.get())
         if total == 0: return
-        save_current_settings()  # 关键：开始计时时保存当前设置
+        save_current_settings()
         remaining_sec[0] = total
         running.set(True)
         paused.set(False)
@@ -348,7 +367,6 @@ def Timer(root, max_width, max_height):
             countdown()
 
     def reset_timer():
-        """重置为当前模式的保存设置"""
         running.set(False)
         paused.set(False)
         if timer_id[0]:
@@ -359,6 +377,11 @@ def Timer(root, max_width, max_height):
         current = current_mode.get()
         load_mode_settings(current)
         timer_label.config(fg="black")
+        # 重置时恢复模式提示
+        if current == "work":
+            mode_display.config(text="工作模式", fg="#007ACC")
+        else:
+            mode_display.config(text="休息模式", fg="#E64A19")
 
     ttk.Button(btn_frame1, text='工作', command=set_work).pack(side=tk.LEFT, padx=5)
     ttk.Button(btn_frame1, text='休息', command=set_break).pack(side=tk.LEFT, padx=5)
