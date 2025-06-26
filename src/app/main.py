@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from .db import create_tables
 from .routers import tasks
@@ -16,6 +17,13 @@ app = FastAPI(
         "locale": "zh-CN",
         "docExpansion": "none",
     },
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],          # 指定前端域名
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 app.include_router(tasks.router)
