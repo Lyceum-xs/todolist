@@ -1,3 +1,4 @@
+from re import A
 from tkinter import *
 from tkinter import ttk
 import tkinter as tk
@@ -148,7 +149,7 @@ def Home(root, max_width, max_height):
             close()
 
         def submit():
-            print(f'Submit succeed:[taskname:{taskname.get()},submit time:{year}/{month}/{day}/{hour}/{minute},due time:{dl_year.get()}/{dl_month.get()}/{dl_day.get()}/{dl_hour.get()}/{dl_minute.get()}]')
+            print(f'Submit succeed:[taskname:{taskname.get()},submit time:{year}/{month}/{day} {hour}:{minute},due time:{dl_year.get()}/{dl_month.get()}/{dl_day.get()} {dl_hour.get()}:{dl_minute.get()}]')
             close()
         
         cancel_button = ttk.Button(window, command = cancel, text = 'cancel', style = 'Home.TButton')
@@ -161,6 +162,11 @@ def Home(root, max_width, max_height):
     add_button.grid(row = 0, column = 2, padx = (0, 5))
         #--------------------------- End --------------------------
     #--------------------------- End --------------------------
+
+    #task list
+    
+
+
 #--------------------------------- End --------------------------------
 
 
@@ -371,6 +377,14 @@ def Timer(root, max_width, max_height):
 #--------------------------------- End --------------------------------
 
 
+# Habbitclockin content
+#-------------------------------- begin -------------------------------
+def Habbitclockin(root, max_width, max_height):
+    clear_frame(root)
+    print('This is Habbitclockin now')
+#--------------------------------- End --------------------------------
+
+
 # choose content
 #-------------------------------- begin -------------------------------
 def Choose_content(name, root, max_width, max_height):
@@ -380,6 +394,8 @@ def Choose_content(name, root, max_width, max_height):
         Settings(root, max_width, max_height)
     elif name == 'Timer':
         Timer(root, max_width, max_height)
+    elif name == 'Habbitclockin':
+        Habbitclockin(root, max_width, max_height)
 #--------------------------------- End --------------------------------
 
 

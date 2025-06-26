@@ -34,8 +34,9 @@ def NavigationBar(root, max_width, max_height):
     # set up the content bar
     con_bar = content_view.ContentBar(root, max_width, max_height)
 
-    home_button = ttk.Button(nb, text = 'Home', style = 'Nav.TButton')
     nb.columnconfigure(0, weight = 1)
+
+    home_button = ttk.Button(nb, text = 'Home', style = 'Nav.TButton')
     home_button.grid(row = 1, column = 0, sticky='ew', pady = (0, 5))
     home_button.bind('<Button-1>', lambda e: content_view.Choose_content('Home', con_bar, max_width - w, max_height - 20))
     
@@ -46,6 +47,10 @@ def NavigationBar(root, max_width, max_height):
     timer_button = ttk.Button(nb, text = 'Timer', style = 'Nav.TButton')
     timer_button.grid(row = 3, column = 0, sticky='ew', pady = (0, 5))
     timer_button.bind('<Button-1>', lambda e: content_view.Choose_content('Timer', con_bar, max_width - w, max_height - 20))
+
+    habbitclockin_button = ttk.Button(nb, text = 'Habbitclockin', style = 'Nav.TButton')
+    habbitclockin_button.grid(row = 4, column = 0, sticky = 'ew', pady = (0, 5))
+    habbitclockin_button.bind('<Button-1>', lambda e: content_view.Choose_content('Habbitclockin', con_bar, max_width - w, max_height - 20))
 
     return nb
 #--------------------------------- End --------------------------------
