@@ -19,7 +19,12 @@ class Task(Base):
     subtasks: Mapped[list["Task"]] = relationship(
         "Task",
         backref="parent",
+<<<<<<< HEAD
         remote_side=[id]
+=======
+        remote_side=[id],
+        cascade="all, delete-orphan"
+>>>>>>> 1325033 (更新排序函数)
     )
 
     created_at: Mapped[datetime] = mapped_column(
