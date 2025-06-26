@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from . import schemas
 
 def create_task(db: Session, data: schemas.TaskCreate) -> models.Task:
-    task = models.Task(**data.dict())
+    task = models.Task(**data.model_dump())
     db.add(task)
     db.commit()
     db.refresh(task)
@@ -27,7 +27,7 @@ def update_task(
         return None
 
     # 更新字段（仅更新 data 中提供的值）
-    for key, value in data.dict(exclude_unset=True).items():
+    for key, value in data.model_dump(exclude_unset=True).items():
         setattr(task, key, value)
 
     db.commit()
