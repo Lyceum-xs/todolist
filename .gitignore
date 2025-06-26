@@ -56,6 +56,10 @@ htmlcov/
 cover/
 .hypothesis/
 
+# Ignore SQLite database files
+todo.db
+*.db
+
 ### Databases ###
 *.sqlite3
 *.sqlite3-journal
@@ -138,3 +142,5 @@ bld/
 [Bb]in/
 [Oo]bj/
 [Ll]og/
+"__pycache__/" 
+"*.pyc" 

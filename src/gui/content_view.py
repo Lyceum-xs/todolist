@@ -177,6 +177,197 @@ def Settings(root, max_width, max_height):
 def Timer(root, max_width, max_height):
     clear_frame(root)
     print('This is timer now')
+
+    timer_frame = tk.Frame(root, bg='#f5f5f5')
+    timer_frame.pack(fill=tk.BOTH, expand=True)
+
+    # 状态变量
+    hour_var = tk.StringVar(value='0')
+    min_var = tk.StringVar(value='25')
+    sec_var = tk.StringVar(value='0')
+    running = tk.BooleanVar(value=False)
+    paused = tk.BooleanVar(value=False)
+    remaining_sec = [0]
+    timer_id = [None]
+    error_occurred = [False]
+    current_mode = tk.StringVar(value="work")
+
+    # 模式与设置时间（默认值，用户调整后覆盖）
+    mode_settings = {
+        "work": {"hour": 0, "min": 25, "sec": 0},
+        "break": {"hour": 0, "min": 5, "sec": 0}
+    }
+
+    mode_display = tk.Label(timer_frame, text="工作模式", font=('consolas', 12), bg='#f5f5f5', fg="#007ACC")
+    mode_display.pack(pady=5)
+
+    # 时间选择区
+    time_frame = tk.Frame(timer_frame, bg='#f5f5f5')
+    time_frame.pack(pady=50)
+    center_frame = tk.Frame(time_frame, bg='#f5f5f5')
+    center_frame.pack()
+
+    def validate_number(new_value, min_val, max_val, var, error_label):
+        if not new_value: return True
+        if not new_value.isdigit():
+            error_label.config(text="请输入数字", fg="red")
+            error_occurred[0] = True
+            return False
+        num = int(new_value)
+        if num < min_val or num > max_val:
+            error_label.config(text=f"请输入{min_val}-{max_val}之间的数字", fg="red")
+            error_occurred[0] = True
+            var.set(min_val if num < min_val else max_val)
+            return False
+        error_label.config(text="", fg="black")
+        error_occurred[0] = False
+        return True
+
+    error_labels = []
+    for i in range(3):
+        error_label = tk.Label(center_frame, text="", bg='#f5f5f5', font=('consolas', 10))
+        error_label.grid(row=2, column=i, pady=2)
+        error_labels.append(error_label)
+
+    def validate_hour(new_value): return validate_number(new_value, 0, 23, hour_var, error_labels[0])
+    def validate_minute(new_value): return validate_number(new_value, 0, 59, min_var, error_labels[1])
+    def validate_second(new_value): return validate_number(new_value, 0, 59, sec_var, error_labels[2])
+
+    tk.Label(center_frame, text='Hour', font=('consolas', 14), bg='#f5f5f5').grid(row=0, column=0, pady=(0, 10))
+    hour_spin = tk.Spinbox(center_frame, from_=0, to=23, width=4, font=('consolas', 18),
+                          textvariable=hour_var, validate="key",
+                          validatecommand=(root.register(validate_hour), '%P'))
+    hour_spin.grid(row=1, column=0, padx=5)
+    tk.Label(center_frame, text='Minute', font=('consolas', 14), bg='#f5f5f5').grid(row=0, column=1, pady=(0, 10))
+    min_spin = tk.Spinbox(center_frame, from_=0, to=59, width=4, font=('consolas', 18),
+                          textvariable=min_var, validate="key",
+                          validatecommand=(root.register(validate_minute), '%P'))
+    min_spin.grid(row=1, column=1, padx=5)
+    tk.Label(center_frame, text='Second', font=('consolas', 14), bg='#f5f5f5').grid(row=0, column=2, pady=(0, 10))
+    sec_spin = tk.Spinbox(center_frame, from_=0, to=59, width=4, font=('consolas', 18),
+                          textvariable=sec_var, validate="key",
+                          validatecommand=(root.register(validate_second), '%P'))
+    sec_spin.grid(row=1, column=2, padx=5)
+
+    def format_time(secs):
+        h = secs // 3600
+        m = (secs % 3600) // 60
+        s = secs % 60
+        return f"{h:02d}:{m:02d}:{s:02d}"
+
+    timer_label = tk.Label(timer_frame, text="00:25:00", font=('consolas', 36), bg='#f5f5f5', fg="black")
+    timer_label.pack(pady=20)
+
+    def update_display(secs=None):
+        if error_occurred[0]: return
+        if secs is not None:
+            timer_label.config(text=format_time(secs))
+        else:
+            total = int(hour_var.get())*3600 + int(min_var.get())*60 + int(sec_var.get())
+            timer_label.config(text=format_time(total))
+        if running.get():
+            timer_label.config(fg="red")
+        else:
+            timer_label.config(fg="black")
+
+    hour_var.trace_add('write', lambda *args: update_display())
+    min_var.trace_add('write', lambda *args: update_display())
+    sec_var.trace_add('write', lambda *args: update_display())
+
+    def save_current_settings():
+        """保存当前模式的时间设置"""
+        current = current_mode.get()
+        mode_settings[current] = {
+            "hour": int(hour_var.get()),
+            "min": int(min_var.get()),
+            "sec": int(sec_var.get())
+        }
+
+    def load_mode_settings(mode):
+        """加载模式设置时间"""
+        settings = mode_settings[mode]
+        hour_var.set(settings["hour"])
+        min_var.set(settings["min"])
+        sec_var.set(settings["sec"])
+        update_display()
+
+    btn_frame1 = tk.Frame(timer_frame, bg='#f5f5f5')
+    btn_frame1.pack(pady=10)
+
+    def set_work():
+        """切换到工作模式并加载设置"""
+        current_mode.set("work")
+        load_mode_settings("work")
+        mode_display.config(text="工作模式", fg="#007ACC")
+
+    def set_break():
+        """切换到休息模式并加载设置"""
+        current_mode.set("break")
+        load_mode_settings("break")
+        mode_display.config(text="休息模式", fg="#E64A19")
+
+    def countdown():
+        if not running.get() or paused.get(): return
+        if remaining_sec[0] <= 0:
+            timer_label.config(text="Time's up!", fg="green")
+            running.set(False)
+            hour_spin.config(state='normal')
+            min_spin.config(state='normal')
+            sec_spin.config(state='normal')
+            return
+        remaining_sec[0] -= 1
+        update_display(remaining_sec[0])
+        timer_id[0] = root.after(1000, countdown)
+
+    def start_timer():
+        """开始计时并保存当前模式设置"""
+        if running.get(): return
+        validate_hour(hour_var.get())
+        validate_minute(min_var.get())
+        validate_second(sec_var.get())
+        if error_occurred[0]: return
+        total = int(hour_var.get())*3600 + int(min_var.get())*60 + int(sec_var.get())
+        if total == 0: return
+        save_current_settings()  # 关键：开始计时时保存当前设置
+        remaining_sec[0] = total
+        running.set(True)
+        paused.set(False)
+        hour_spin.config(state='disabled')
+        min_spin.config(state='disabled')
+        sec_spin.config(state='disabled')
+        update_display(remaining_sec[0])
+        countdown()
+
+    def pause_timer():
+        if running.get() and not paused.get():
+            paused.set(True)
+            if timer_id[0]:
+                root.after_cancel(timer_id[0])
+        elif running.get() and paused.get():
+            paused.set(False)
+            countdown()
+
+    def reset_timer():
+        """重置为当前模式的保存设置"""
+        running.set(False)
+        paused.set(False)
+        if timer_id[0]:
+            root.after_cancel(timer_id[0])
+        hour_spin.config(state='normal')
+        min_spin.config(state='normal')
+        sec_spin.config(state='normal')
+        current = current_mode.get()
+        load_mode_settings(current)
+        timer_label.config(fg="black")
+
+    ttk.Button(btn_frame1, text='工作', command=set_work).pack(side=tk.LEFT, padx=5)
+    ttk.Button(btn_frame1, text='休息', command=set_break).pack(side=tk.LEFT, padx=5)
+    ttk.Button(btn_frame1, text='开始', command=start_timer).pack(side=tk.LEFT, padx=5)
+
+    btn_frame2 = tk.Frame(timer_frame, bg='#f5f5f5')
+    btn_frame2.pack(pady=10)
+    ttk.Button(btn_frame2, text='暂停/继续', command=pause_timer).pack(side=tk.LEFT, padx=5)
+    ttk.Button(btn_frame2, text='重置', command=reset_timer).pack(side=tk.LEFT, padx=5)
 #--------------------------------- End --------------------------------
 
 

@@ -14,11 +14,12 @@ cd /path/to/todo
 python -m venv .venv && source .venv/bin/activate
 
 #安装依赖
-pip install -r requirements.txt
+pip install -r requirements.txt  
+如果是在根目录打开终端的uvicorn src.app.main:app --reload命令
 
 #启动开发服务器
 uvicorn app.main:app --reload
-
+（若在根目录开终端用）
 #打开浏览器
 http://127.0.0.1:8000/docs
 
