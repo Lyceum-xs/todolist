@@ -6,11 +6,7 @@ class TaskBase(BaseModel):
     description: str | None = None
     due_date: datetime | None = None
     importance: bool = False
-<<<<<<< HEAD
     urgency: bool = False
-=======
-    urgent: bool = False
->>>>>>> 1325033 (更新排序函数)
     parent_id: int | None = None
 
     class Config:
@@ -26,11 +22,7 @@ class TaskUpdate(BaseModel):
     due_date: datetime | None = None
     completed: bool | None = None
     importance: bool | None = None
-<<<<<<< HEAD
     urgency: bool | None = None
-=======
-    urgent: bool | None = None
->>>>>>> 1325033 (更新排序函数)
 
     class Config:
         title = "任务更新"
