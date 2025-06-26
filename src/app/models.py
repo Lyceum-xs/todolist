@@ -1,5 +1,5 @@
-from datetime import datetime, timezone
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String
+from datetime import datetime, timezone , date
+from sqlalchemy import Boolean, DateTime, Date , ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .db import Base
@@ -13,13 +13,15 @@ class Task(Base):
     due_date: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     completed: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     importance: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
-    urgency: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    urgent: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
     parent_id: Mapped[int | None] = mapped_column(ForeignKey("tasks.id"))
     subtasks: Mapped[list["Task"]] = relationship(
         "Task",
         backref="parent",
-        remote_side=[id]
+        remote_side=[id],
+        single_parent=True,
+        cascade="all, delete-orphan" #删除父任务时，其所有子任务会被级联删除
     )
 
     created_at: Mapped[datetime] = mapped_column(
@@ -39,8 +41,8 @@ class Task(Base):
         urgent_weight = 0.45
         due_date_weight = 0.1
 
-        urgency_value = 1 if self.urgency else 0
-        importance_value = 1 if self.importance else 0
+        urgent_value = 1 if self.urgent else 0
+        importance_value = 1 if self.important else 0
 
         # 处理截止日期属性，如果有截止日期，计算距离当前时间的天数；没有则设为一个较大值
         if self.due_date:
@@ -52,7 +54,30 @@ class Task(Base):
 
         priority = (
             importance_value * importance_weight +
-            urgency_value * urgent_weight +
+            urgent_value * urgent_weight +
             due_date_value * due_date_weight
         )
         return priority
+
+class Habit(Base):
+    __tablename__ = "habits"
+
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    name: Mapped[str] = mapped_column(String(128), unique=True, nullable=False)
+    # 重复周期（天数），默认 1 = 每天
+    interval: Mapped[int] = mapped_column(Integer, default=1, nullable=False)
+
+    logs: Mapped[list["HabitLog"]] = relationship(
+        "HabitLog", back_populates="habit", cascade="all, delete-orphan"
+    )
+
+
+class HabitLog(Base):
+    __tablename__ = "habit_logs"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    habit_id: Mapped[int] = mapped_column(ForeignKey("habits.id"), nullable=False)
+    date: Mapped[date] = mapped_column(Date, nullable=False)
+    done: Mapped[bool] = mapped_column(Boolean, default=True)
+
+    habit: Mapped["Habit"] = relationship("Habit", back_populates="logs")

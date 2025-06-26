@@ -1,5 +1,7 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
+from .routers import habits 
 from .db import create_tables
 from .routers import tasks
 
@@ -18,7 +20,15 @@ app = FastAPI(
     },
 )
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],          # 指定前端域名
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 app.include_router(tasks.router)
+app.include_router(habits.router)
 
 @app.on_event("startup")
 def init_db():
