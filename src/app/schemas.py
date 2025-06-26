@@ -20,9 +20,9 @@ class TaskUpdate(BaseModel):
     name: str | None = Field(None, max_length=255)
     description: str | None = None
     due_date: datetime | None = None
-    completed: bool | None = None
-    importance: bool | None = None
-    urgent: bool | None = None
+    completed: bool | None = False
+    importance: bool | None = False
+    urgent: bool | None = False
 
     class Config:
         title = "任务更新"
