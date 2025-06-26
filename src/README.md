@@ -18,7 +18,7 @@ pip install -r requirements.txt
 
 #启动开发服务器
 uvicorn app.main:app --reload
-
+（若在根目录开终端用）
 #打开浏览器
 http://127.0.0.1:8000/docs
 

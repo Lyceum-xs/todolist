@@ -1,6 +1,6 @@
 # === 核心运行时依赖 ===
 # 数据库ORM（核心数据操作）
-sqlalchemy==2.0.20
+sqlalchemy==2.0.41
 
 # 日期处理（时间计算和解析）
 python-dateutil==2.8.2

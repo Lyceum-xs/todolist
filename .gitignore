@@ -56,6 +56,10 @@ htmlcov/
 cover/
 .hypothesis/
 
+# Ignore SQLite database files
+todo.db
+*.db
+
 ### Databases ###
 *.sqlite3
 *.sqlite3-journal
