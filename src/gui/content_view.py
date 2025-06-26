@@ -171,7 +171,6 @@ def Settings(root, max_width, max_height):
     print('This is settings now')
 #--------------------------------- End --------------------------------
 
-
 # timer content
 #-------------------------------- begin -------------------------------
 def Timer(root, max_width, max_height):
@@ -191,19 +190,39 @@ def Timer(root, max_width, max_height):
     timer_id = [None]
     error_occurred = [False]
     current_mode = tk.StringVar(value="work")
+    work_content_var = tk.StringVar()  # 工作内容变量
 
-    # 模式与设置时间（默认值，用户调整后覆盖）
+    # 模式与设置时间
     mode_settings = {
         "work": {"hour": 0, "min": 25, "sec": 0},
         "break": {"hour": 0, "min": 5, "sec": 0}
     }
 
+    # ----------- 工作内容输入栏目始终在顶部 -----------
+    work_content_frame = tk.Frame(timer_frame, bg='#f5f5f5')
+    work_content_label = tk.Label(work_content_frame, text="当前工作内容：", font=('consolas', 12, 'bold'), bg='#f5f5f5')
+    work_content_label.pack(side=tk.LEFT, padx=(5, 5))
+    work_content_entry = tk.Entry(work_content_frame, textvariable=work_content_var, font=('consolas', 12), width=30)
+    work_content_entry.pack(side=tk.LEFT, fill=tk.X, expand=True)
+    work_content_frame.pack(side=tk.TOP, anchor='n', pady=(15, 5), fill=tk.X)  # 固定在顶部
+
+    # 状态栏
     mode_display = tk.Label(timer_frame, text="工作模式", font=('consolas', 12), bg='#f5f5f5', fg="#007ACC")
     mode_display.pack(pady=5)
 
+    def update_work_content_state():
+        """根据模式更新工作内容输入栏状态（不改变布局顺序）"""
+        if current_mode.get() == "work":
+            work_content_entry.config(state='normal')
+            # 始终保持在顶部，不 pack_forget
+        else:
+            work_content_entry.config(state='disabled')
+            # 休息模式下禁用输入，但不隐藏，且可选：清空内容
+            # work_content_var.set('')  # 如需切换时清空内容可取消注释
+
     # 时间选择区
     time_frame = tk.Frame(timer_frame, bg='#f5f5f5')
-    time_frame.pack(pady=50)
+    time_frame.pack(pady=50, anchor='center')
     center_frame = tk.Frame(time_frame, bg='#f5f5f5')
     center_frame.pack()
 
@@ -256,7 +275,7 @@ def Timer(root, max_width, max_height):
         return f"{h:02d}:{m:02d}:{s:02d}"
 
     timer_label = tk.Label(timer_frame, text="00:25:00", font=('consolas', 36), bg='#f5f5f5', fg="black")
-    timer_label.pack(pady=20)
+    timer_label.pack(pady=20, anchor='center')  # 居中显示
 
     def update_display(secs=None):
         if error_occurred[0]: return
@@ -275,7 +294,6 @@ def Timer(root, max_width, max_height):
     sec_var.trace_add('write', lambda *args: update_display())
 
     def save_current_settings():
-        """保存当前模式的时间设置"""
         current = current_mode.get()
         mode_settings[current] = {
             "hour": int(hour_var.get()),
@@ -284,7 +302,6 @@ def Timer(root, max_width, max_height):
         }
 
     def load_mode_settings(mode):
-        """加载模式设置时间"""
         settings = mode_settings[mode]
         hour_var.set(settings["hour"])
         min_var.set(settings["min"])
@@ -292,35 +309,32 @@ def Timer(root, max_width, max_height):
         update_display()
 
     btn_frame1 = tk.Frame(timer_frame, bg='#f5f5f5')
-    btn_frame1.pack(pady=10)
+    btn_frame1.pack(pady=10, anchor='center')  # 按钮居中
 
     def set_work():
-        """切换到工作模式并加载设置"""
+        """切换到工作模式并显示输入栏"""
+        if running.get():
+            mode_display.config(text="计时中，无法切换模式", fg="red")
+            # 不再恢复原提示，让提示一直显示
+            return
         current_mode.set("work")
         load_mode_settings("work")
         mode_display.config(text="工作模式", fg="#007ACC")
+        update_work_content_state()
+        work_content_entry.focus()
 
     def set_break():
-        """切换到休息模式并加载设置"""
+        """切换到休息模式并禁用输入栏"""
+        if running.get():
+            mode_display.config(text="计时中，无法切换模式", fg="red")
+            # 不再恢复原提示，让提示一直显示
+            return
         current_mode.set("break")
         load_mode_settings("break")
         mode_display.config(text="休息模式", fg="#E64A19")
-
-    def countdown():
-        if not running.get() or paused.get(): return
-        if remaining_sec[0] <= 0:
-            timer_label.config(text="Time's up!", fg="green")
-            running.set(False)
-            hour_spin.config(state='normal')
-            min_spin.config(state='normal')
-            sec_spin.config(state='normal')
-            return
-        remaining_sec[0] -= 1
-        update_display(remaining_sec[0])
-        timer_id[0] = root.after(1000, countdown)
+        update_work_content_state()
 
     def start_timer():
-        """开始计时并保存当前模式设置"""
         if running.get(): return
         validate_hour(hour_var.get())
         validate_minute(min_var.get())
@@ -328,7 +342,7 @@ def Timer(root, max_width, max_height):
         if error_occurred[0]: return
         total = int(hour_var.get())*3600 + int(min_var.get())*60 + int(sec_var.get())
         if total == 0: return
-        save_current_settings()  # 关键：开始计时时保存当前设置
+        save_current_settings()
         remaining_sec[0] = total
         running.set(True)
         paused.set(False)
@@ -348,7 +362,6 @@ def Timer(root, max_width, max_height):
             countdown()
 
     def reset_timer():
-        """重置为当前模式的保存设置"""
         running.set(False)
         paused.set(False)
         if timer_id[0]:
@@ -359,15 +372,38 @@ def Timer(root, max_width, max_height):
         current = current_mode.get()
         load_mode_settings(current)
         timer_label.config(fg="black")
+        # 重置时恢复模式提示
+        if current == "work":
+            mode_display.config(text="工作模式", fg="#007ACC")
+            update_work_content_state()
+        else:
+            mode_display.config(text="休息模式", fg="#E64A19")
+            update_work_content_state()
 
-    ttk.Button(btn_frame1, text='工作', command=set_work).pack(side=tk.LEFT, padx=5)
-    ttk.Button(btn_frame1, text='休息', command=set_break).pack(side=tk.LEFT, padx=5)
-    ttk.Button(btn_frame1, text='开始', command=start_timer).pack(side=tk.LEFT, padx=5)
+    def countdown():
+        if not running.get() or paused.get(): return
+        if remaining_sec[0] <= 0:
+            timer_label.config(text="Time's up!", fg="green")
+            running.set(False)
+            hour_spin.config(state='normal')
+            min_spin.config(state='normal')
+            sec_spin.config(state='normal')
+            return
+        remaining_sec[0] -= 1
+        update_display(remaining_sec[0])
+        timer_id[0] = root.after(1000, countdown)
+
+    ttk.Button(btn_frame1, text='工作', command=set_work).pack(side=tk.LEFT, padx=10)
+    ttk.Button(btn_frame1, text='休息', command=set_break).pack(side=tk.LEFT, padx=10)
+    ttk.Button(btn_frame1, text='开始', command=start_timer).pack(side=tk.LEFT, padx=10)
 
     btn_frame2 = tk.Frame(timer_frame, bg='#f5f5f5')
-    btn_frame2.pack(pady=10)
-    ttk.Button(btn_frame2, text='暂停/继续', command=pause_timer).pack(side=tk.LEFT, padx=5)
-    ttk.Button(btn_frame2, text='重置', command=reset_timer).pack(side=tk.LEFT, padx=5)
+    btn_frame2.pack(pady=10, anchor='center')
+    ttk.Button(btn_frame2, text='暂停/继续', command=pause_timer).pack(side=tk.LEFT, padx=10)
+    ttk.Button(btn_frame2, text='重置', command=reset_timer).pack(side=tk.LEFT, padx=10)
+
+    # 初始化显示状态
+    update_work_content_state()
 #--------------------------------- End --------------------------------
 
 
