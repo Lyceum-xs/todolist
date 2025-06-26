@@ -29,21 +29,22 @@ def NavigationBar(root, max_width, max_height):
                    padding=0,             # no inner padding
                    relief='flat')         # flat style
 
-    title = ttk.Label(nb, text = 'To Do List', style = 'Text.TLabel').place(x = 20, y = 30, width = w)
+    title = ttk.Label(nb, text = 'To Do List', style = 'Text.TLabel').grid(row = 0, column = 0, sticky='ew',padx = (20, 0), pady = (30, 30))
 
     # set up the content bar
     con_bar = content_view.ContentBar(root, max_width, max_height)
 
     home_button = ttk.Button(nb, text = 'Home', style = 'Nav.TButton')
-    home_button.place(x = 0, y = h / 15 * 3, width = w)
+    nb.columnconfigure(0, weight = 1)
+    home_button.grid(row = 1, column = 0, sticky='ew', pady = (0, 5))
     home_button.bind('<Button-1>', lambda e: content_view.Choose_content('Home', con_bar, max_width - w, max_height - 20))
     
     settings_button = ttk.Button(nb, text = 'Settings', style = 'Nav.TButton')
-    settings_button.place(x = 0, y = h / 15 * 4, width = w)
+    settings_button.grid(row = 2, column = 0, sticky='ew', pady = (0, 5))
     settings_button.bind('<Button-1>', lambda e: content_view.Choose_content('Settings', con_bar, max_width - w, max_height - 20))
     
     timer_button = ttk.Button(nb, text = 'Timer', style = 'Nav.TButton')
-    timer_button.place(x = 0, y = h / 15 * 5, width = w)
+    timer_button.grid(row = 3, column = 0, sticky='ew', pady = (0, 5))
     timer_button.bind('<Button-1>', lambda e: content_view.Choose_content('Timer', con_bar, max_width - w, max_height - 20))
 
     return nb
@@ -72,8 +73,9 @@ def TitleBar(root, max_width, max_height):
                    padding=0,
                    relief='flat')
     
-    close_button = ttk.Button(title_frame, text = 'X', style = 'Tit.TButton')
-    close_button.place(x = 570, y = 0, width = 25, height = h)
+    title_frame.columnconfigure(0, weight = 1)
+    close_button = ttk.Button(title_frame, text = 'X', width = 5, style = 'Tit.TButton')
+    close_button.grid(row = 0, column = 1)
     
     # bind the close function
     close_button.bind("<Button-1>", lambda e: root.destroy())
