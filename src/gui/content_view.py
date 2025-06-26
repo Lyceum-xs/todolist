@@ -431,6 +431,78 @@ def Timer(root, max_width, max_height):
 def Habbitclockin(root, max_width, max_height):
     clear_frame(root)
     print('This is Habbitclockin now')
+
+    # 存放栏目名称的列表
+    columns = []
+
+    # 创建样式对象
+    style = ttk.Style()
+    style.configure('TEntry', font=('consolas', 12))
+    style.configure('TButton', font=('consolas', 12))
+    style.configure('Listbox.TLabel', font=('consolas', 12))
+
+    # 输入框
+    entry_var = tk.StringVar()
+    entry = ttk.Entry(root, textvariable=entry_var, style='TEntry')
+    entry.grid(row=0, column=0, columnspan=2, pady=10, padx=20, sticky='ew')
+
+    # 添加栏目功能
+    def add_column():
+        name = entry_var.get().strip()
+        if name:
+            columns.append(name)
+            listbox.insert(tk.END, name)
+            entry_var.set("")
+
+    add_btn = ttk.Button(root, text="添加栏目", command=add_column, style='TButton')
+    add_btn.grid(row=1, column=0, columnspan=2, pady=5, padx=20, sticky='ew')
+
+    # 显示栏目列表的Listbox
+    listbox = tk.Listbox(root, font=('consolas', 12), height=20)
+    listbox.grid(row=2, column=0, columnspan=2, pady=10, padx=20, sticky='nsew')
+
+    # 设置列和行的权重
+    root.columnconfigure(0, weight=1)
+    root.columnconfigure(1, weight=1)
+    root.rowconfigure(2, weight=1)
+
+    # 绑定双击事件
+    def on_double_click(event):
+        selected_item = listbox.curselection()
+        if selected_item:
+            index = selected_item[0]
+            column_name = columns[index]
+            print(f"编辑栏目: {column_name}")
+            edit_column(index, column_name)
+
+    listbox.bind("<Double-1>", on_double_click)
+
+    # 编辑栏目功能
+    def edit_column(index, old_name):
+        def save_edit():
+            new_name = entry_var.get().strip()
+            if new_name and new_name != old_name:
+                columns[index] = new_name
+                listbox.delete(index)
+                listbox.insert(index, new_name)
+                entry_var.set("")
+            edit_window.destroy()
+
+        edit_window = tk.Toplevel(root)
+        edit_window.title("编辑栏目")
+        edit_window.geometry("300x150")
+
+        label = tk.Label(edit_window, text="修改栏目名称:", font=('consolas', 12))
+        label.pack(pady=10)
+
+        entry_edit = tk.Entry(edit_window, textvariable=entry_var, font=('consolas', 12))
+        entry_edit.pack(pady=10)
+
+        save_btn = tk.Button(edit_window, text="保存", command=save_edit, font=('consolas', 12))
+        save_btn.pack(pady=10)
+
+        entry_edit.insert(0, old_name)
+        entry_edit.focus()
 #--------------------------------- End --------------------------------
 
 
