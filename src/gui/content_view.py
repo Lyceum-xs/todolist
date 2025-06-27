@@ -470,8 +470,8 @@ def Habitclockin(root, max_width, max_height):
             c = week % 7
             if week == 7:
                 r += 1
-            day_label = ttk.Label(calendar_frame, text = day, style = 'Hab.TLabel')
-            day_label.grid(row = r, column = c, padx = 30, pady = 20)
+            day_button = ttk.Button(calendar_frame, text = day, style = 'Hab.TButton', width = 5)
+            day_button.grid(row = r, column = c, padx = 10, pady = 20)
 
     def yl_game():
         nonlocal target_year
@@ -522,8 +522,8 @@ def Habitclockin(root, max_width, max_height):
         c = week % 7
         if week == 7:
             r += 1
-        day_label = ttk.Label(calendar_frame, text = day, style = 'Hab.TLabel')
-        day_label.grid(row = r, column = c, padx = 30, pady = 20)
+        day_button = ttk.Button(calendar_frame, text = day, style = 'Hab.TButton', width = 5)
+        day_button.grid(row = r, column = c, padx = 5, pady = 20)
 
     #------------------------ End ------------------------
 
