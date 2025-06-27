@@ -1,3 +1,5 @@
+import calendar
+from logging import root
 from re import A
 from tkinter import *
 from tkinter import ttk
@@ -432,86 +434,100 @@ def Habitclockin(root, max_width, max_height):
     clear_frame(root)
     print('This is Habitclockin now')
 
-    # 存放栏目名称的列表
-    columns = []
-
-    # 创建样式对象
     style = ttk.Style()
-    style.configure('TEntry', font=('consolas', 12))
-    style.configure('TButton', font=('consolas', 12))
-    style.configure('Listbox.TLabel', font=('consolas', 12))
+    style.configure('Hab.TButton', 
+                   background='#FFFFFF',
+                   foreground='#000000',
+                   font = ('consolas', 10),
+                   borderwidth=0,
+                   padding=0,
+                   relief='flat')
+    style.configure('Hab.TLabel', font = ('consolas', 10))
 
-    # 输入框
-    entry_var = tk.StringVar()
-    entry = ttk.Entry(root, textvariable=entry_var, style='TEntry')
-    entry.grid(row=0, column=0, columnspan=2, pady=10, padx=20, sticky='ew')
+    root.columnconfigure(0, weight = 1)
 
-    # 添加栏目功能
-    def add_column():
-        name = entry_var.get().strip()
-        if name:
-            columns.append(name)
-            listbox.insert(tk.END, name)
-            entry_var.set("")
+    # calendar frame
+    #----------------------- begin -----------------------
+    calendar_frame = ttk.Frame(root)
+    calendar_frame.grid(row = 0, column = 0, sticky = 'ew')
 
-    add_btn = ttk.Button(root, text="添加栏目", command=add_column, style='TButton')
-    add_btn.grid(row=1, column=0, columnspan=2, pady=5, padx=20, sticky='ew')
+    nowtime = get_data.gettime()
+    target_year = nowtime['year']
+    target_month = nowtime['month']
 
-    # 显示栏目列表的Listbox
-    listbox = tk.Listbox(root, font=('consolas', 12), height=20)
-    listbox.grid(row=2, column=0, columnspan=2, pady=10, padx=20, sticky='nsew')
+    def update_calendar():
+        for widget in calendar_frame.grid_slaves():
+            row = widget.grid_info().get('row', -1)
+            if row is not None and row >= 2:
+                widget.destroy()
 
-    # 设置列和行的权重
-    root.columnconfigure(0, weight=1)
-    root.columnconfigure(1, weight=1)
-    root.rowconfigure(2, weight=1)
+        year_label.config(text = f'{target_year} year')
+        month_label.config(text = f'{target_month} month')
 
-    # 绑定双击事件
-    def on_double_click(event):
-        selected_item = listbox.curselection()
-        if selected_item:
-            index = selected_item[0]
-            column_name = columns[index]
-            print(f"编辑栏目: {column_name}")
-            edit_column(index, column_name)
+        calendar = get_data.getcalendar(target_year, target_month)
+        r = 2
+        for day, week in calendar.items():
+            c = week % 7
+            if week == 7:
+                r += 1
+            day_label = ttk.Label(calendar_frame, text = day, style = 'Hab.TLabel')
+            day_label.grid(row = r, column = c, padx = 30, pady = 20)
 
-    listbox.bind("<Double-1>", on_double_click)
+    def yl_game():
+        nonlocal target_year
+        target_year -= 1
+        update_calendar()
+    def yr_game():
+        nonlocal target_year
+        target_year += 1
+        update_calendar()
+    def ml_game():
+        nonlocal target_month, target_year
+        target_month -= 1
+        if target_month < 1:
+            target_year -= 1
+            target_month = 12
+        update_calendar()
+    def mr_game():
+        nonlocal target_month, target_year
+        target_month += 1
+        if target_month > 12:
+            target_month = 1
+            target_year += 1
+        update_calendar()
 
-    # 编辑栏目功能
-    def edit_column(index, old_name):
-        def save_edit():
-            new_name = entry_var.get().strip()
-            if new_name and new_name != old_name:
-                columns[index] = new_name
-                listbox.delete(index)
-                listbox.insert(index, new_name)
-                entry_var.set("")
-            edit_window.destroy()
+    yl_button = ttk.Button(calendar_frame, text = '<', style = 'Hab.TButton',width = 3, command = yl_game)
+    yr_button = ttk.Button(calendar_frame, text = '>', style = 'Hab.TButton',width = 3, command = yr_game)
+    ml_button = ttk.Button(calendar_frame, text = '<', style = 'Hab.TButton',width = 3, command = ml_game)
+    mr_button = ttk.Button(calendar_frame, text = '>', style = 'Hab.TButton',width = 3, command = mr_game)
 
-        edit_window = tk.Toplevel(root)
-        edit_window.title("编辑栏目")
-        edit_window.geometry("300x150")
+    yl_button.grid(row = 0, column = 0)
+    yr_button.grid(row = 0, column = 2)
+    ml_button.grid(row = 0, column = 3)
+    mr_button.grid(row = 0, column = 5)
 
-        # 使窗口居中
-        edit_window.update_idletasks()
-        screen_width = edit_window.winfo_screenwidth()
-        screen_height = edit_window.winfo_screenheight()
-        size = tuple(int(_) for _ in edit_window.geometry().split('+')[0].split('x'))
-        x = (screen_width - size[0]) // 2
-        y = (screen_height - size[1]) // 2
-        edit_window.geometry(f"{size[0]}x{size[1]}+{x}+{y}")
+    year_label = ttk.Label(calendar_frame, text = f'{target_year} year', style = 'Hab.TLabel')
+    month_label = ttk.Label(calendar_frame, text = f'{target_month} month', style = 'Hab.TLabel')
+    year_label.grid(row = 0, column = 1)
+    month_label.grid(row = 0, column = 4)
 
-        label = tk.Label(edit_window, text="修改栏目名称:", font=('consolas', 12))
-        label.pack(pady=10)
+    week_labels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+    for i, week in enumerate(week_labels):
+        week_label = ttk.Label(calendar_frame, text = week, style = 'Hab.TLabel')
+        week_label.grid(row = 1, column = i, padx = 30)
 
-        entry_edit = tk.Entry(edit_window, textvariable=entry_var, font=('consolas', 12))
-        entry_edit.pack(pady=10)
+    calendar = get_data.getcalendar(target_year, target_month)
+    r = 2
+    for day, week in calendar.items():
+        c = week % 7
+        if week == 7:
+            r += 1
+        day_label = ttk.Label(calendar_frame, text = day, style = 'Hab.TLabel')
+        day_label.grid(row = r, column = c, padx = 30, pady = 20)
 
-        save_btn = tk.Button(edit_window, text="保存", command=save_edit, font=('consolas', 12))
-        save_btn.pack(pady=10)
+    #------------------------ End ------------------------
 
-        entry_edit.insert(0, old_name)
-        entry_edit.focus()
+
 #--------------------------------- End --------------------------------
 
 
