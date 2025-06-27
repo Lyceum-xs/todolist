@@ -426,11 +426,11 @@ def Timer(root, max_width, max_height):
 #--------------------------------- End --------------------------------
 
 
-# Habbitclockin content
+# Habitclockin content
 #-------------------------------- begin -------------------------------
-def Habbitclockin(root, max_width, max_height):
+def Habitclockin(root, max_width, max_height):
     clear_frame(root)
-    print('This is Habbitclockin now')
+    print('This is Habitclockin now')
 
     # 存放栏目名称的列表
     columns = []
@@ -492,6 +492,15 @@ def Habbitclockin(root, max_width, max_height):
         edit_window.title("编辑栏目")
         edit_window.geometry("300x150")
 
+        # 使窗口居中
+        edit_window.update_idletasks()
+        screen_width = edit_window.winfo_screenwidth()
+        screen_height = edit_window.winfo_screenheight()
+        size = tuple(int(_) for _ in edit_window.geometry().split('+')[0].split('x'))
+        x = (screen_width - size[0]) // 2
+        y = (screen_height - size[1]) // 2
+        edit_window.geometry(f"{size[0]}x{size[1]}+{x}+{y}")
+
         label = tk.Label(edit_window, text="修改栏目名称:", font=('consolas', 12))
         label.pack(pady=10)
 
@@ -515,8 +524,8 @@ def Choose_content(name, root, max_width, max_height):
         Settings(root, max_width, max_height)
     elif name == 'Timer':
         Timer(root, max_width, max_height)
-    elif name == 'Habbitclockin':
-        Habbitclockin(root, max_width, max_height)
+    elif name == 'Habitclockin':
+        Habitclockin(root, max_width, max_height)
 #--------------------------------- End --------------------------------
 
 
