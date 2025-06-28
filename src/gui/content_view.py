@@ -511,7 +511,9 @@ def Habitclockin(root, max_width, max_height):
             c = week % 7
             if week == 7:
                 r += 1
-            day_button = ttk.Button(calendar_frame, text = day, style = 'Hab.TButton', width = 5)
+            def game(time):
+                print(f'{time} is now')
+            day_button = ttk.Button(calendar_frame, text = day, style = 'Hab.TButton', width = 5, command = lambda d = day: game(d))
             day_button.grid(row = r, column = c, padx = 10, pady = 20)
 
     def update_calendar():
