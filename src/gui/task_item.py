@@ -52,6 +52,9 @@ def NavigationBar(root, max_width, max_height):
     habitclockin_button.grid(row = 4, column = 0, sticky = 'ew', pady = (0, 5))
     habitclockin_button.bind('<Button-1>', lambda e: content_view.Choose_content('Habitclockin', con_bar, max_width - w, max_height - 20))
 
+    # set default content bar
+    content_view.Home(con_bar, max_width - w, max_height - 20)
+
     return nb
 #--------------------------------- End --------------------------------
 
