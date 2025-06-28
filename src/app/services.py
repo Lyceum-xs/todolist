@@ -17,6 +17,7 @@ class TaskService:
             except Exception as e:
                 raise ValueError(f"创建失败: {str(e)}")
 
+    """获取子任务"""
     @staticmethod
     def get_task_with_children(task_id: int) -> schemas.TaskOut:
         with db_session() as db:
@@ -65,6 +66,17 @@ class TaskService:
                 return True
             except Exception as e:
                 raise ValueError(f"删除失败: {str(e)}")
+
+    """检查父任务是否存在且有效"""
+    @staticmethod
+    def _validate_parent(db: Session, parent_id: int | None) -> None:
+        if parent_id is not None:
+            parent = get_task(db, parent_id)
+            if not parent:
+                raise ValueError(f"父任务ID {parent_id} 不存在")
+            # 可选：防止循环引用
+            if parent.parent_id == parent_id:
+                raise ValueError("不能设置自己为父任务")
 
 
 class HabitService:

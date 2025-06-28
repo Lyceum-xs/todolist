@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 from datetime import date as da
 from sqlalchemy import Boolean, DateTime, Date , ForeignKey, Integer, String
+import sqlalchemy
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .db import Base
@@ -37,7 +38,9 @@ class Task(Base):
     )
     @property
     #暂时实现一个简单的加权求和法，后续有优化拟合量化函数可以再改
-    def priority_parameter(self):
+    def priority_parameter(self) -> float:
+        if self.completed:
+            return 0.0  # 已完成任务最低优先级
         importance_weight = 0.45
         urgent_weight = 0.45
         due_date_weight = 0.1
@@ -46,10 +49,14 @@ class Task(Base):
         importance_value = 1 if self.importance else 0
 
         # 处理截止日期属性，如果有截止日期，计算距离当前时间的天数；没有则设为一个较大值
+        now =datetime.now(timezone.utc)
         if self.due_date:
-            days_to_due = (self.due_date - datetime.now(timezone.utc)).days
-            days_to_due = max(days_to_due, 0)
-            due_date_value = 1 / (days_to_due + 1)
+            if self.due_date < now:
+                due_date_value = 1.0
+            else:
+                days_to_due = (self.due_date - datetime.now(timezone.utc)).days
+                days_to_due = max(days_to_due, 0)
+                due_date_value = 1 / (days_to_due + 1)
         else:
             due_date_value = 0
 
@@ -76,9 +83,11 @@ class Habit(Base):
 
 class HabitLog(Base):
     __tablename__ = "habit_logs"
-
+    __table_args__ = (
+        sqlalchemy.UniqueConstraint('habit_id', 'date', name='uq_habit_date'),
+    )
     id: Mapped[int] = mapped_column(primary_key=True)
     habit_id: Mapped[int] = mapped_column(ForeignKey("habits.id"), nullable=False)
-    date: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    date: Mapped[da] = mapped_column(Date, default=lambda: da.today(), nullable=False)
 
     habit: Mapped["Habit"] = relationship("Habit", back_populates="logs")
