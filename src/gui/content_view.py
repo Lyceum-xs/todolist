@@ -1,4 +1,3 @@
-import calendar
 import collections
 from logging import root
 from re import A
@@ -536,11 +535,11 @@ def Habitclockin(root, max_width, max_height):
             clockin_button = ttk.Button(clockin_frame, text = 'clockin', style = 'Hab.TButton', command = clo)
             clockin_button.grid(row = 2, column = 1)
         
-        elif target_date['year'] < nowtime['year'] or target_date['month'] < nowtime['month'] or target_date['day'] < nowtime['day']:
+        elif (target_date['year'] < nowtime['year']) or (target_date['year'] == nowtime['year'] and target_date['month'] < nowtime['month']) or (target_date['year'] == nowtime['year'] and target_date['month'] == nowtime['month'] and target_date['day'] < nowtime['day']):
             content_label = ttk.Label(clockin_frame, text = 'You didn\'t clockin on this day', style = 'Hab.TLabel')
             content_label.grid(row = 1, column = 0, pady = 50)
         
-        else:
+        elif (target_date['year'] > nowtime['year']) or (target_date['year'] == nowtime['year'] and target_date['month'] > nowtime['month']) or (target_date['year'] == nowtime['year'] and target_date['month'] == nowtime['month'] and target_date['day'] > nowtime['day']):
             content_label = ttk.Label(clockin_frame, text = 'This day has not arrived', style = 'Hab.TLabel')
             content_label.grid(row = 1, column = 0, pady = 50)
 
