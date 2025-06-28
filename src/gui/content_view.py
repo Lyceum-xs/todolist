@@ -230,22 +230,20 @@ def Timer(root, max_width, max_height):
     # 状态栏
     mode_display = ttk.Label(timer_frame, text="工作模式", font=('consolas', 12), foreground="#007ACC")
     mode_display.pack(pady=5, anchor='n')  # 固定在顶部
+    
     def update_work_content_state():
         """根据模式更新工作内容输入栏状态（不改变布局顺序）"""
         if current_mode.get() == "work":
             work_content_entry.config(state='normal')
-            # 始终保持在顶部，不 pack_forget
         else:
             work_content_entry.config(state='disabled')
-            # 休息模式下禁用输入，但不隐藏，且可选：清空内容
-            # work_content_var.set('')  # 如需切换时清空内容可取消注释
 
-    # 时间选择区
-    time_frame = ttk.Frame(timer_frame)
-    time_frame.pack(pady=20, anchor='center')
-    time_frame.grid_columnconfigure((0,1,2), weight=1)
-    center_frame = ttk.Frame(time_frame, bg='#f5f5f5')
-    center_frame.grid(row=0, column=0, columnspan=3, padx= 20, pady=10, sticky='ew')
+    # 时间选择区 - 改为全用pack布局
+    time_container = ttk.Frame(timer_frame)
+    time_container.pack(pady=20)
+    
+    center_frame = ttk.Frame(time_container)
+    center_frame.pack()
 
     def validate_number(new_value, min_val, max_val, var, error_label):
         if not new_value: return True
@@ -263,31 +261,45 @@ def Timer(root, max_width, max_height):
         error_occurred[0] = False
         return True
 
+    # 错误标签容器
+    error_container = ttk.Frame(time_container)
+    error_container.pack(pady=5)
+    
     error_labels = []
     for i in range(3):
-        error_label = ttk.Label(time_frame, text="", font=('consolas', 10))
-        error_label.grid(row=2, column=i, pady=2)
+        error_label = ttk.Label(error_container, text="", font=('consolas', 10))
+        error_label.pack(side=tk.LEFT, padx=40)
         error_labels.append(error_label)
 
     def validate_hour(new_value): return validate_number(new_value, 0, 23, hour_var, error_labels[0])
     def validate_minute(new_value): return validate_number(new_value, 0, 59, min_var, error_labels[1])
     def validate_second(new_value): return validate_number(new_value, 0, 59, sec_var, error_labels[2])
 
-    tk.Label(center_frame, text='Hour', font=('consolas', 14), bg='#f5f5f5').grid(row=0, column=0, pady=(0, 10))
-    hour_spin = tk.Spinbox(center_frame, from_=0, to=23, width=4, font=('consolas', 18),
+    # 时间标签
+    label_frame = ttk.Frame(center_frame)
+    label_frame.pack()
+    ttk.Label(label_frame, text='Hour', font=('consolas', 14)).pack(side=tk.LEFT, padx=20)
+    ttk.Label(label_frame, text='Minute', font=('consolas', 14)).pack(side=tk.LEFT, padx=20)
+    ttk.Label(label_frame, text='Second', font=('consolas', 14)).pack(side=tk.LEFT, padx=20)
+
+    # 时间输入框
+    spinbox_frame = ttk.Frame(center_frame)
+    spinbox_frame.pack(pady=10)
+    
+    hour_spin = tk.Spinbox(spinbox_frame, from_=0, to=23, width=4, font=('consolas', 18),
                           textvariable=hour_var, validate="key",
                           validatecommand=(root.register(validate_hour), '%P'))
-    hour_spin.grid(row=1, column=0, padx=5)
-    tk.Label(center_frame, text='Minute', font=('consolas', 14), bg='#f5f5f5').grid(row=0, column=1, pady=(0, 10))
-    min_spin = tk.Spinbox(center_frame, from_=0, to=59, width=4, font=('consolas', 18),
+    hour_spin.pack(side=tk.LEFT, padx=20)
+    
+    min_spin = tk.Spinbox(spinbox_frame, from_=0, to=59, width=4, font=('consolas', 18),
                           textvariable=min_var, validate="key",
                           validatecommand=(root.register(validate_minute), '%P'))
-    min_spin.grid(row=1, column=1, padx=5)
-    tk.Label(center_frame, text='Second', font=('consolas', 14), bg='#f5f5f5').grid(row=0, column=2, pady=(0, 10))
-    sec_spin = tk.Spinbox(center_frame, from_=0, to=59, width=4, font=('consolas', 18),
+    min_spin.pack(side=tk.LEFT, padx=20)
+    
+    sec_spin = tk.Spinbox(spinbox_frame, from_=0, to=59, width=4, font=('consolas', 18),
                           textvariable=sec_var, validate="key",
                           validatecommand=(root.register(validate_second), '%P'))
-    sec_spin.grid(row=1, column=2, padx=5)
+    sec_spin.pack(side=tk.LEFT, padx=20)
 
     def format_time(secs):
         h = secs // 3600
@@ -295,14 +307,8 @@ def Timer(root, max_width, max_height):
         s = secs % 60
         return f"{h:02d}:{m:02d}:{s:02d}"
 
-    timer_label = tk.Label(
-        timer_frame,
-        text="00:25:00",
-        font=('consolas', 36),
-        bg='#f5f5f5',
-        fg="black"
-    )
-    timer_label.pack(pady=20, anchor='center')  # 居中显示
+    timer_label = ttk.Label(timer_frame, text="00:25:00", font=('consolas', 36))
+    timer_label.pack(pady=20)
 
     def update_display(secs=None):
         if error_occurred[0]: return
@@ -312,9 +318,9 @@ def Timer(root, max_width, max_height):
             total = int(hour_var.get())*3600 + int(min_var.get())*60 + int(sec_var.get())
             timer_label.config(text=format_time(total))
         if running.get():
-            timer_label.config(fg="red")
+            timer_label.config(foreground="red")
         else:
-            timer_label.config(fg="black")
+            timer_label.config(foreground="black")
 
     hour_var.trace_add('write', lambda *args: update_display())
     min_var.trace_add('write', lambda *args: update_display())
@@ -335,32 +341,25 @@ def Timer(root, max_width, max_height):
         sec_var.set(settings["sec"])
         update_display()
 
-    btn_frame1 = ttk.Frame(timer_frame)
-    btn_frame1.grid(row=4, column=0, pady=10, padx=10, sticky='ew')
-    timer_frame.grid_columnconfigure(0, weight=1)  # 让列填充父容器
-    btn_frame1.grid_columnconfigure((0,1,2), weight=1)  # 三个按钮均分宽度
-
     def set_work():
         """切换到工作模式并显示输入栏"""
         if running.get():
-            mode_display.config(text="计时中，无法切换模式", fg="red")
-            # 不再恢复原提示，让提示一直显示
+            mode_display.config(text="计时中，无法切换模式", foreground="red")
             return
         current_mode.set("work")
         load_mode_settings("work")
-        mode_display.config(text="工作模式", fg="#007ACC")
+        mode_display.config(text="工作模式", foreground="#007ACC")
         update_work_content_state()
         work_content_entry.focus()
 
     def set_break():
         """切换到休息模式并禁用输入栏"""
         if running.get():
-            mode_display.config(text="计时中，无法切换模式", fg="red")
-            # 不再恢复原提示，让提示一直显示
+            mode_display.config(text="计时中，无法切换模式", foreground="red")
             return
         current_mode.set("break")
         load_mode_settings("break")
-        mode_display.config(text="休息模式", fg="#E64A19")
+        mode_display.config(text="休息模式", foreground="#E64A19")
         update_work_content_state()
 
     def start_timer():
@@ -400,19 +399,19 @@ def Timer(root, max_width, max_height):
         sec_spin.config(state='normal')
         current = current_mode.get()
         load_mode_settings(current)
-        timer_label.config(fg="black")
+        timer_label.config(foreground="black")
         # 重置时恢复模式提示
         if current == "work":
-            mode_display.config(text="工作模式", fg="#007ACC")
+            mode_display.config(text="工作模式", foreground="#007ACC")
             update_work_content_state()
         else:
-            mode_display.config(text="休息模式", fg="#E64A19")
+            mode_display.config(text="休息模式", foreground="#E64A19")
             update_work_content_state()
 
     def countdown():
         if not running.get() or paused.get(): return
         if remaining_sec[0] <= 0:
-            timer_label.config(text="Time's up!", fg="green")
+            timer_label.config(text="Time's up!", foreground="green")
             running.set(False)
             hour_spin.config(state='normal')
             min_spin.config(state='normal')
@@ -422,23 +421,22 @@ def Timer(root, max_width, max_height):
         update_display(remaining_sec[0])
         timer_id[0] = root.after(1000, countdown)
 
-    ttk.Button(btn_frame1, text='工作', command=set_work).grid(row=0, column=0, sticky='ew', padx=(0,5))
-    ttk.Button(btn_frame1, text='休息', command=set_break).grid(row=0, column=1, sticky='ew', padx=(5,5))
-    ttk.Button(btn_frame1, text='开始', command=start_timer).grid(row=0, column=2, sticky='ew', padx=(5,0))
+    # ----------- 按钮布局优化核心（改为全pack布局）-----------
+    # 第一组按钮（工作/休息/开始）
+    btn_frame1 = ttk.Frame(timer_frame)
+    btn_frame1.pack(fill=tk.X, padx=20, pady=10)
+    
+    ttk.Button(btn_frame1, text='工作', command=set_work).pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0,5))
+    ttk.Button(btn_frame1, text='休息', command=set_break).pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(5,5))
+    ttk.Button(btn_frame1, text='开始', command=start_timer).pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(5,0))
 
+    # 第二组按钮（暂停/重置）
     btn_frame2 = ttk.Frame(timer_frame)
-    btn_frame2.grid(row=5, column=0, pady=10, padx=10, sticky='ew')
-    btn_frame2.grid_columnconfigure((0,1), weight=1)
-    ttk.Button(btn_frame2, text='暂停/继续', command=pause_timer).grid(row=0, column=0, sticky='ew', padx=(0,5))
-    ttk.Button(btn_frame2, text='重置', command=reset_timer).grid(row=0, column=1, sticky='ew', padx=(5,0))
-    # 绑定窗口大小变化事件，调整按钮宽度
-    def on_window_resize(event):
-        for child in btn_frame1.winfo_children():
-            child.config(width=int(btn_frame1.winfo_width()/3 - 10))  # 均分宽度
-        for child in btn_frame2.winfo_children():
-            child.config(width=int(btn_frame2.winfo_width()/2 - 10))  # 均分宽度
+    btn_frame2.pack(fill=tk.X, padx=20, pady=10)
+    
+    ttk.Button(btn_frame2, text='暂停/继续', command=pause_timer).pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0,5))
+    ttk.Button(btn_frame2, text='重置', command=reset_timer).pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(5,0))
 
-    root.bind('<Configure>', on_window_resize)
     # 初始化显示状态
     update_work_content_state()
 #--------------------------------- End --------------------------------
