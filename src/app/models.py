@@ -43,7 +43,7 @@ class Task(Base):
         due_date_weight = 0.1
 
         urgent_value = 1 if self.urgent else 0
-        importance_value = 1 if self.important else 0
+        importance_value = 1 if self.importance else 0
 
         # 处理截止日期属性，如果有截止日期，计算距离当前时间的天数；没有则设为一个较大值
         if self.due_date:
