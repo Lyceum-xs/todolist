@@ -60,25 +60,25 @@ class Task(Base):
         )
         return priority
 
+
 class Habit(Base):
     __tablename__ = "habits"
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     name: Mapped[str] = mapped_column(String(128), unique=True, nullable=False)
-    # 重复周期（天数），默认 1 = 每天
-    interval: Mapped[int] = mapped_column(Integer, default=1, nullable=False)
+    description: Mapped[str | None] = mapped_column(String, nullable=True)
+    completed: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    duration: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
 
     logs: Mapped[list["HabitLog"]] = relationship(
         "HabitLog", back_populates="habit", cascade="all, delete-orphan"
     )
-
 
 class HabitLog(Base):
     __tablename__ = "habit_logs"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     habit_id: Mapped[int] = mapped_column(ForeignKey("habits.id"), nullable=False)
-    date: Mapped[da] = mapped_column(Date, nullable=False)
-    done: Mapped[bool] = mapped_column(Boolean, default=True)
+    date: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
     habit: Mapped["Habit"] = relationship("Habit", back_populates="logs")

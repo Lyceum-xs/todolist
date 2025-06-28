@@ -1,9 +1,8 @@
 from datetime import datetime
-from datetime import date
 from pydantic import BaseModel, Field , ConfigDict
 
 class TaskBase(BaseModel):
-    name: str = Field(..., max_length=255)
+    name: str = Field(..., max_length=255) #...表示创建必需
     description: str | None = None
     due_date: datetime | None = None
     importance: bool = False
@@ -31,22 +30,44 @@ class TaskUpdate(BaseModel):
 class TaskOut(TaskBase):
     id: int
     completed: bool
+    created_at: datetime
+    updated_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes=True
         title = "任务详情"
 
 class HabitBase(BaseModel):
     name: str = Field(..., max_length=128)
-    interval: int = Field(1, ge=1, le=30)
+    description: str | None = None
+    duration: int = 0
+
+    class Config:
+        title = "习惯基础信息"
 
 class HabitCreate(HabitBase):
-    pass
+    class Config:
+        title = "习惯创建"
+
+class HabitUpdate(HabitBase):
+    name: str | None = Field(None, max_length=255)
+    description: str | None = None
+    completed: bool | None = False
+    duration: int | None = None
+    class Config:
+        title = "习惯更新"
+
+class HabitLogCreate(BaseModel):
+    date: datetime | None = None
+
+class HabitLogOut(BaseModel):
+    id: int
+    date: datetime
+
+    model_config = ConfigDict(from_attributes=True, title= "打卡日志详情")
 
 class HabitOut(HabitBase):
     id: int
+    logs: list[HabitLogOut] = []
 
-    model_config = ConfigDict(from_attributes=True)
-
-class HabitLogCreate(BaseModel):
-    date: date
+    model_config = ConfigDict(from_attributes=True, title= "习惯详情")
