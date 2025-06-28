@@ -1,4 +1,5 @@
-from datetime import datetime, timezone , date
+from datetime import datetime, timezone
+from datetime import date as da
 from sqlalchemy import Boolean, DateTime, Date , ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -77,7 +78,7 @@ class HabitLog(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     habit_id: Mapped[int] = mapped_column(ForeignKey("habits.id"), nullable=False)
-    date: Mapped[date] = mapped_column(Date, nullable=False)
+    date: Mapped[da] = mapped_column(Date, nullable=False)
     done: Mapped[bool] = mapped_column(Boolean, default=True)
 
     habit: Mapped["Habit"] = relationship("Habit", back_populates="logs")
