@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import asc, case, desc
 from sqlalchemy.orm import Session
 
 from .. import crud, models, schemas
@@ -21,7 +20,6 @@ def create_task(data: schemas.TaskCreate, db: Session = Depends(get_db)):
 @router.get("", response_model=list[schemas.TaskOut], summary="任务列表")
 def list_tasks(
     status: str | None = Query(None, description="completed | pending | all"),
-    order: str = Query("priority", description="priority | due_date"),
     db: Session = Depends(get_db),
 ):
     q = db.query(models.Task)
@@ -30,28 +28,9 @@ def list_tasks(
     elif status == "pending":
         q = q.filter(models.Task.completed.is_(False))
 
-    # 自定义优先级排序：urgent desc, importance desc
-    if order == "priority":
-        q = q.order_by(
-            desc(models.Task.urgent),               # True (1) 在前
-            desc(models.Task.importance),           # True (1) 在前
-            case((models.Task.due_date.is_(None), 1), else_=0),
-            asc(models.Task.due_date),
-        )
-    elif order == "due_date":
-        q = q.order_by(
-            case((models.Task.due_date.is_(None), 1), else_=0),
-            asc(models.Task.due_date),
-        )
-    else:
-        # 默认使用 priority 排序
-        q = q.order_by(
-            desc(models.Task.urgent),
-            desc(models.Task.importance),
-            case((models.Task.due_date.is_(None), 1), else_=0),
-            asc(models.Task.due_date),
-        )
-    return q.all()
+    tasks = q.all()
+    tasks.sort(key=lambda t: t.priority_parameter, reverse=True)
+    return tasks
 
 @router.get("/{task_id:int}", response_model=schemas.TaskOut, summary="获取任务")
 def get_task(task_id: int, db: Session = Depends(get_db)):
