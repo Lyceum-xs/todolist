@@ -18,12 +18,21 @@ class Task(Base):
     urgent: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
     parent_id: Mapped[int | None] = mapped_column(ForeignKey("tasks.id"))
+
+    # 单个父任务（uselist=False）
+    parent: Mapped["Task"] = relationship(
+        "Task",
+        remote_side=[id],
+        back_populates="subtasks",
+        uselist=False
+    )
+
+    # 子任务列表
     subtasks: Mapped[list["Task"]] = relationship(
         "Task",
-        backref="parent",
-        remote_side=[id],
-        single_parent=True,
-        cascade="all, delete-orphan" #删除父任务时，其所有子任务会被级联删除
+        back_populates="parent",
+        cascade="all, delete-orphan",
+        single_parent=True
     )
 
     created_at: Mapped[datetime] = mapped_column(
