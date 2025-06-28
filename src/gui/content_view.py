@@ -4,6 +4,7 @@ from re import A
 from tkinter import *
 from tkinter import ttk
 import tkinter as tk
+from turtle import back
 import get_data
 
 # clear all widgets in a frame
@@ -498,6 +499,12 @@ def Habitclockin(root, max_width, max_height):
     target_year = nowtime['year']
     target_month = nowtime['month']
 
+    def clear_calendar():
+        for widget in calendar_frame.grid_slaves():
+            row = widget.grid_info().get('row', -1)
+            if row is not None and row >= 2:
+                widget.destroy()
+
     def draw_calendar(calendar):
         r = 2
         for day, week in calendar.items():
@@ -508,17 +515,13 @@ def Habitclockin(root, max_width, max_height):
             day_button.grid(row = r, column = c, padx = 10, pady = 20)
 
     def update_calendar():
-        for widget in calendar_frame.grid_slaves():
-            row = widget.grid_info().get('row', -1)
-            if row is not None and row >= 2:
-                widget.destroy()
+        clear_calendar()
 
         year_label.config(text = f'{target_year} year')
         month_label.config(text = f'{target_month} month')
 
         calendar = get_data.getcalendar(target_year, target_month)
         draw_calendar(calendar)
-        
 
     def yl_game():
         nonlocal target_year
@@ -566,6 +569,15 @@ def Habitclockin(root, max_width, max_height):
     calendar = get_data.getcalendar(target_year, target_month)
     draw_calendar(calendar)
 
+    def back_to_today():
+        nonlocal target_year, target_month
+        target_year = nowtime['year']
+        target_month = nowtime['month']
+
+        update_calendar()
+
+    back_to_today_button = ttk.Button(calendar_frame, text = 'back', style = 'Hab.TButton', command = back_to_today)
+    back_to_today_button.grid(row = 0, column = 6)
     #------------------------ End ------------------------
 
 
