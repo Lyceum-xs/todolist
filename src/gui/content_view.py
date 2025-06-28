@@ -209,9 +209,8 @@ def Timer(root, max_width, max_height):
     paused = tk.BooleanVar(value=False)
     remaining_sec = [0]
     timer_id = [None]
-    error_occurred = [False]
     current_mode = tk.StringVar(value="work")
-    work_content_var = tk.StringVar()  # 工作内容变量
+    work_content_var = tk.StringVar()
 
     # 模式与设置时间
     mode_settings = {
@@ -225,55 +224,25 @@ def Timer(root, max_width, max_height):
     work_content_label.pack(side=tk.LEFT, padx=(5, 5))
     work_content_entry = ttk.Entry(work_content_frame, textvariable=work_content_var, font=('consolas', 12), width=30)
     work_content_entry.pack(side=tk.LEFT, fill=tk.X, expand=True)
-    work_content_frame.pack(side=tk.TOP, anchor='n', pady=(15, 5), fill=tk.X)   # 固定在顶部
+    work_content_frame.pack(side=tk.TOP, pady=(15, 5), fill=tk.X)
 
     # 状态栏
     mode_display = ttk.Label(timer_frame, text="工作模式", font=('consolas', 12), foreground="#007ACC")
-    mode_display.pack(pady=5, anchor='n')  # 固定在顶部
+    mode_display.pack(pady=5)
     
     def update_work_content_state():
-        """根据模式更新工作内容输入栏状态（不改变布局顺序）"""
+        """根据模式更新工作内容输入栏状态"""
         if current_mode.get() == "work":
             work_content_entry.config(state='normal')
         else:
             work_content_entry.config(state='disabled')
 
-    # 时间选择区 - 改为全用pack布局
+    # 时间选择区
     time_container = ttk.Frame(timer_frame)
     time_container.pack(pady=20)
     
     center_frame = ttk.Frame(time_container)
     center_frame.pack()
-
-    def validate_number(new_value, min_val, max_val, var, error_label):
-        if not new_value: return True
-        if not new_value.isdigit():
-            error_label.config(text="请输入数字", fg="red")
-            error_occurred[0] = True
-            return False
-        num = int(new_value)
-        if num < min_val or num > max_val:
-            error_label.config(text=f"请输入{min_val}-{max_val}之间的数字", fg="red")
-            error_occurred[0] = True
-            var.set(min_val if num < min_val else max_val)
-            return False
-        error_label.config(text="", fg="black")
-        error_occurred[0] = False
-        return True
-
-    # 错误标签容器
-    error_container = ttk.Frame(time_container)
-    error_container.pack(pady=5)
-    
-    error_labels = []
-    for i in range(3):
-        error_label = ttk.Label(error_container, text="", font=('consolas', 10))
-        error_label.pack(side=tk.LEFT, padx=40)
-        error_labels.append(error_label)
-
-    def validate_hour(new_value): return validate_number(new_value, 0, 23, hour_var, error_labels[0])
-    def validate_minute(new_value): return validate_number(new_value, 0, 59, min_var, error_labels[1])
-    def validate_second(new_value): return validate_number(new_value, 0, 59, sec_var, error_labels[2])
 
     # 时间标签
     label_frame = ttk.Frame(center_frame)
@@ -282,23 +251,50 @@ def Timer(root, max_width, max_height):
     ttk.Label(label_frame, text='Minute', font=('consolas', 14)).pack(side=tk.LEFT, padx=20)
     ttk.Label(label_frame, text='Second', font=('consolas', 14)).pack(side=tk.LEFT, padx=20)
 
+    # 输入验证函数
+    def validate_hour(value):
+        if value == "": return True
+        try:
+            num = int(value)
+            return 0 <= num <= 23
+        except ValueError:
+            return False
+
+    def validate_minute(value):
+        if value == "": return True
+        try:
+            num = int(value)
+            return 0 <= num <= 59
+        except ValueError:
+            return False
+
+    def validate_second(value):
+        if value == "": return True
+        try:
+            num = int(value)
+            return 0 <= num <= 59
+        except ValueError:
+            return False
+
+    # 注册验证函数
+    vcmd_hour = (root.register(validate_hour), '%P')
+    vcmd_minute = (root.register(validate_minute), '%P')
+    vcmd_second = (root.register(validate_second), '%P')
+
     # 时间输入框
     spinbox_frame = ttk.Frame(center_frame)
     spinbox_frame.pack(pady=10)
     
     hour_spin = tk.Spinbox(spinbox_frame, from_=0, to=23, width=4, font=('consolas', 18),
-                          textvariable=hour_var, validate="key",
-                          validatecommand=(root.register(validate_hour), '%P'))
+                          textvariable=hour_var, validate="key", validatecommand=vcmd_hour)
     hour_spin.pack(side=tk.LEFT, padx=20)
     
     min_spin = tk.Spinbox(spinbox_frame, from_=0, to=59, width=4, font=('consolas', 18),
-                          textvariable=min_var, validate="key",
-                          validatecommand=(root.register(validate_minute), '%P'))
+                          textvariable=min_var, validate="key", validatecommand=vcmd_minute)
     min_spin.pack(side=tk.LEFT, padx=20)
     
     sec_spin = tk.Spinbox(spinbox_frame, from_=0, to=59, width=4, font=('consolas', 18),
-                          textvariable=sec_var, validate="key",
-                          validatecommand=(root.register(validate_second), '%P'))
+                          textvariable=sec_var, validate="key", validatecommand=vcmd_second)
     sec_spin.pack(side=tk.LEFT, padx=20)
 
     def format_time(secs):
@@ -311,38 +307,48 @@ def Timer(root, max_width, max_height):
     timer_label.pack(pady=20)
 
     def update_display(secs=None):
-        if error_occurred[0]: return
-        if secs is not None:
-            timer_label.config(text=format_time(secs))
-        else:
-            total = int(hour_var.get())*3600 + int(min_var.get())*60 + int(sec_var.get())
-            timer_label.config(text=format_time(total))
-        if running.get():
-            timer_label.config(foreground="red")
-        else:
-            timer_label.config(foreground="black")
+        try:
+            if secs is not None:
+                timer_label.config(text=format_time(secs))
+            else:
+                h = int(hour_var.get() or 0)
+                m = int(min_var.get() or 0)
+                s = int(sec_var.get() or 0)
+                total = h * 3600 + m * 60 + s
+                timer_label.config(text=format_time(total))
+            
+            if running.get():
+                timer_label.config(foreground="red")
+            else:
+                timer_label.config(foreground="black")
+        except ValueError:
+            pass  # 忽略无效输入
 
+    # 绑定变量变化事件
     hour_var.trace_add('write', lambda *args: update_display())
     min_var.trace_add('write', lambda *args: update_display())
     sec_var.trace_add('write', lambda *args: update_display())
 
     def save_current_settings():
-        current = current_mode.get()
-        mode_settings[current] = {
-            "hour": int(hour_var.get()),
-            "min": int(min_var.get()),
-            "sec": int(sec_var.get())
-        }
+        try:
+            current = current_mode.get()
+            mode_settings[current] = {
+                "hour": int(hour_var.get() or 0),
+                "min": int(min_var.get() or 0),
+                "sec": int(sec_var.get() or 0)
+            }
+        except ValueError:
+            pass
 
     def load_mode_settings(mode):
         settings = mode_settings[mode]
-        hour_var.set(settings["hour"])
-        min_var.set(settings["min"])
-        sec_var.set(settings["sec"])
+        hour_var.set(str(settings["hour"]))
+        min_var.set(str(settings["min"]))
+        sec_var.set(str(settings["sec"]))
         update_display()
 
     def set_work():
-        """切换到工作模式并显示输入栏"""
+        """切换到工作模式"""
         if running.get():
             mode_display.config(text="计时中，无法切换模式", foreground="red")
             return
@@ -353,7 +359,7 @@ def Timer(root, max_width, max_height):
         work_content_entry.focus()
 
     def set_break():
-        """切换到休息模式并禁用输入栏"""
+        """切换到休息模式"""
         if running.get():
             mode_display.config(text="计时中，无法切换模式", foreground="red")
             return
@@ -363,66 +369,89 @@ def Timer(root, max_width, max_height):
         update_work_content_state()
 
     def start_timer():
-        if running.get(): return
-        validate_hour(hour_var.get())
-        validate_minute(min_var.get())
-        validate_second(sec_var.get())
-        if error_occurred[0]: return
-        total = int(hour_var.get())*3600 + int(min_var.get())*60 + int(sec_var.get())
-        if total == 0: return
-        save_current_settings()
-        remaining_sec[0] = total
-        running.set(True)
-        paused.set(False)
-        hour_spin.config(state='disabled')
-        min_spin.config(state='disabled')
-        sec_spin.config(state='disabled')
-        update_display(remaining_sec[0])
-        countdown()
+        if running.get():
+            return
+        
+        try:
+            h = int(hour_var.get() or 0)
+            m = int(min_var.get() or 0)
+            s = int(sec_var.get() or 0)
+            total = h * 3600 + m * 60 + s
+            
+            if total == 0:
+                mode_display.config(text="请设置时间", foreground="red")
+                return
+                
+            save_current_settings()
+            remaining_sec[0] = total
+            running.set(True)
+            paused.set(False)
+            
+            hour_spin.config(state='disabled')
+            min_spin.config(state='disabled')
+            sec_spin.config(state='disabled')
+            
+            update_display(remaining_sec[0])
+            countdown()
+            
+        except ValueError:
+            mode_display.config(text="请输入有效时间", foreground="red")
 
     def pause_timer():
-        if running.get() and not paused.get():
-            paused.set(True)
-            if timer_id[0]:
-                root.after_cancel(timer_id[0])
-        elif running.get() and paused.get():
-            paused.set(False)
-            countdown()
+        if running.get():
+            if not paused.get():
+                paused.set(True)
+                if timer_id[0]:
+                    root.after_cancel(timer_id[0])
+                mode_display.config(text="已暂停", foreground="orange")
+            else:
+                paused.set(False)
+                countdown()
+                current = current_mode.get()
+                if current == "work":
+                    mode_display.config(text="工作模式", foreground="#007ACC")
+                else:
+                    mode_display.config(text="休息模式", foreground="#E64A19")
 
     def reset_timer():
         running.set(False)
         paused.set(False)
+        
         if timer_id[0]:
             root.after_cancel(timer_id[0])
+            
         hour_spin.config(state='normal')
         min_spin.config(state='normal')
         sec_spin.config(state='normal')
+        
         current = current_mode.get()
         load_mode_settings(current)
-        timer_label.config(foreground="black")
-        # 重置时恢复模式提示
+        
         if current == "work":
             mode_display.config(text="工作模式", foreground="#007ACC")
-            update_work_content_state()
         else:
             mode_display.config(text="休息模式", foreground="#E64A19")
-            update_work_content_state()
+        
+        update_work_content_state()
 
     def countdown():
-        if not running.get() or paused.get(): return
+        if not running.get() or paused.get():
+            return
+            
         if remaining_sec[0] <= 0:
             timer_label.config(text="Time's up!", foreground="green")
             running.set(False)
             hour_spin.config(state='normal')
             min_spin.config(state='normal')
             sec_spin.config(state='normal')
+            mode_display.config(text="时间到！", foreground="green")
             return
+            
         remaining_sec[0] -= 1
         update_display(remaining_sec[0])
         timer_id[0] = root.after(1000, countdown)
 
-    # ----------- 按钮布局优化核心（改为全pack布局）-----------
-    # 第一组按钮（工作/休息/开始）
+    # 按钮布局
     btn_frame1 = ttk.Frame(timer_frame)
     btn_frame1.pack(fill=tk.X, padx=20, pady=10)
     
@@ -430,15 +459,15 @@ def Timer(root, max_width, max_height):
     ttk.Button(btn_frame1, text='休息', command=set_break).pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(5,5))
     ttk.Button(btn_frame1, text='开始', command=start_timer).pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(5,0))
 
-    # 第二组按钮（暂停/重置）
     btn_frame2 = ttk.Frame(timer_frame)
     btn_frame2.pack(fill=tk.X, padx=20, pady=10)
     
     ttk.Button(btn_frame2, text='暂停/继续', command=pause_timer).pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0,5))
     ttk.Button(btn_frame2, text='重置', command=reset_timer).pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(5,0))
 
-    # 初始化显示状态
+    # 初始化
     update_work_content_state()
+    update_display()
 #--------------------------------- End --------------------------------
 
 
