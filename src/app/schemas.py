@@ -9,12 +9,10 @@ class TaskBase(BaseModel):
     urgent: bool = False
     parent_id: int | None = None
 
-    class Config:
-        title = "任务基础信息"
+    model_config = ConfigDict(title= "任务基础信息")
 
 class TaskCreate(TaskBase):
-    class Config:
-        title = "任务创建"
+    model_config = ConfigDict(title= "任务创建")
 
 class TaskUpdate(BaseModel):
     name: str | None = Field(None, max_length=255)
@@ -24,8 +22,7 @@ class TaskUpdate(BaseModel):
     importance: bool | None = False
     urgent: bool | None = False
 
-    class Config:
-        title = "任务更新"
+    model_config = ConfigDict(title= "任务更新")
 
 class TaskOut(TaskBase):
     id: int
@@ -33,29 +30,25 @@ class TaskOut(TaskBase):
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        from_attributes=True
-        title = "任务详情"
+    model_config = ConfigDict(from_attributes=True, title= "任务详情")
 
 class HabitBase(BaseModel):
     name: str = Field(..., max_length=128)
     description: str | None = None
     duration: int = 0
 
-    class Config:
-        title = "习惯基础信息"
+    model_config = ConfigDict(title= "习惯基础信息")
 
 class HabitCreate(HabitBase):
-    class Config:
-        title = "习惯创建"
+    model_config = ConfigDict(title= "习惯创建")
 
 class HabitUpdate(HabitBase):
     name: str | None = Field(None, max_length=255)
     description: str | None = None
     completed: bool | None = False
     duration: int | None = None
-    class Config:
-        title = "习惯更新"
+
+    model_config = ConfigDict(title= "习惯更新")
 
 class HabitLogCreate(BaseModel):
     date: datetime | None = None
