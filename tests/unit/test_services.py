@@ -1,6 +1,5 @@
 """
-核心服务层 CRUD 测试
-$ pytest -q
+pytest tests/unit/test_services.py -q
 """
 from datetime import datetime, timedelta
 

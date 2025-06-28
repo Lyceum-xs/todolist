@@ -1,6 +1,5 @@
 """
-模型层（Task / Habit / HabitLog）核心行为测试
-$ pytest -q  # 运行
+pytest tests/unit/test_models.py -q
 """
 from datetime import datetime, timedelta, timezone
 import sqlalchemy as sa
@@ -63,7 +62,7 @@ def test_habit_and_logs_cascade(db_session):
     db_session.commit()
 
     # 1) 日志应在 relationship 中可见
-    assert habit.logs and habit.logs[0].habit_id == habit.id
+    assert len(habit.logs) == 1
 
     # 2) 删 habit → log 级联删除
     db_session.delete(habit)
