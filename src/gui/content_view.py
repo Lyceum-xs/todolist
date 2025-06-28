@@ -198,7 +198,7 @@ def Timer(root, max_width, max_height):
     clear_frame(root)
     print('This is timer now')
 
-    timer_frame = tk.Frame(root, bg='#f5f5f5')
+    timer_frame = ttk.Frame(root)
     timer_frame.pack(fill=tk.BOTH, expand=True)
 
     # 状态变量
@@ -220,17 +220,16 @@ def Timer(root, max_width, max_height):
     }
 
     # ----------- 工作内容输入栏目始终在顶部 -----------
-    work_content_frame = tk.Frame(timer_frame, bg='#f5f5f5')
-    work_content_label = tk.Label(work_content_frame, text="当前工作内容：", font=('consolas', 12, 'bold'), bg='#f5f5f5')
+    work_content_frame = ttk.Frame(timer_frame)
+    work_content_label = ttk.Label(work_content_frame, text="当前工作内容：", font=('consolas', 12, 'bold'))
     work_content_label.pack(side=tk.LEFT, padx=(5, 5))
-    work_content_entry = tk.Entry(work_content_frame, textvariable=work_content_var, font=('consolas', 12), width=30)
+    work_content_entry = ttk.Entry(work_content_frame, textvariable=work_content_var, font=('consolas', 12), width=30)
     work_content_entry.pack(side=tk.LEFT, fill=tk.X, expand=True)
-    work_content_frame.pack(side=tk.TOP, anchor='n', pady=(15, 5), fill=tk.X)  # 固定在顶部
+    work_content_frame.pack(side=tk.TOP, anchor='n', pady=(15, 5), fill=tk.X)   # 固定在顶部
 
     # 状态栏
-    mode_display = tk.Label(timer_frame, text="工作模式", font=('consolas', 12), bg='#f5f5f5', fg="#007ACC")
-    mode_display.pack(pady=5)
-
+    mode_display = ttk.Label(timer_frame, text="工作模式", font=('consolas', 12), foreground="#007ACC")
+    mode_display.pack(pady=5, anchor='n')  # 固定在顶部
     def update_work_content_state():
         """根据模式更新工作内容输入栏状态（不改变布局顺序）"""
         if current_mode.get() == "work":
@@ -242,10 +241,11 @@ def Timer(root, max_width, max_height):
             # work_content_var.set('')  # 如需切换时清空内容可取消注释
 
     # 时间选择区
-    time_frame = tk.Frame(timer_frame, bg='#f5f5f5')
-    time_frame.pack(pady=50, anchor='center')
-    center_frame = tk.Frame(time_frame, bg='#f5f5f5')
-    center_frame.pack()
+    time_frame = ttk.Frame(timer_frame)
+    time_frame.pack(pady=20, anchor='center')
+    time_frame.grid_columnconfigure((0,1,2), weight=1)
+    center_frame = ttk.Frame(time_frame, bg='#f5f5f5')
+    center_frame.grid(row=0, column=0, columnspan=3, padx= 20, pady=10, sticky='ew')
 
     def validate_number(new_value, min_val, max_val, var, error_label):
         if not new_value: return True
@@ -265,7 +265,7 @@ def Timer(root, max_width, max_height):
 
     error_labels = []
     for i in range(3):
-        error_label = tk.Label(center_frame, text="", bg='#f5f5f5', font=('consolas', 10))
+        error_label = ttk.Label(time_frame, text="", font=('consolas', 10))
         error_label.grid(row=2, column=i, pady=2)
         error_labels.append(error_label)
 
@@ -295,7 +295,13 @@ def Timer(root, max_width, max_height):
         s = secs % 60
         return f"{h:02d}:{m:02d}:{s:02d}"
 
-    timer_label = tk.Label(timer_frame, text="00:25:00", font=('consolas', 36), bg='#f5f5f5', fg="black")
+    timer_label = tk.Label(
+        timer_frame,
+        text="00:25:00",
+        font=('consolas', 36),
+        bg='#f5f5f5',
+        fg="black"
+    )
     timer_label.pack(pady=20, anchor='center')  # 居中显示
 
     def update_display(secs=None):
@@ -329,8 +335,10 @@ def Timer(root, max_width, max_height):
         sec_var.set(settings["sec"])
         update_display()
 
-    btn_frame1 = tk.Frame(timer_frame, bg='#f5f5f5')
-    btn_frame1.pack(pady=10, anchor='center')  # 按钮居中
+    btn_frame1 = ttk.Frame(timer_frame)
+    btn_frame1.grid(row=4, column=0, pady=10, padx=10, sticky='ew')
+    timer_frame.grid_columnconfigure(0, weight=1)  # 让列填充父容器
+    btn_frame1.grid_columnconfigure((0,1,2), weight=1)  # 三个按钮均分宽度
 
     def set_work():
         """切换到工作模式并显示输入栏"""
@@ -414,15 +422,23 @@ def Timer(root, max_width, max_height):
         update_display(remaining_sec[0])
         timer_id[0] = root.after(1000, countdown)
 
-    ttk.Button(btn_frame1, text='工作', command=set_work).pack(side=tk.LEFT, padx=10)
-    ttk.Button(btn_frame1, text='休息', command=set_break).pack(side=tk.LEFT, padx=10)
-    ttk.Button(btn_frame1, text='开始', command=start_timer).pack(side=tk.LEFT, padx=10)
+    ttk.Button(btn_frame1, text='工作', command=set_work).grid(row=0, column=0, sticky='ew', padx=(0,5))
+    ttk.Button(btn_frame1, text='休息', command=set_break).grid(row=0, column=1, sticky='ew', padx=(5,5))
+    ttk.Button(btn_frame1, text='开始', command=start_timer).grid(row=0, column=2, sticky='ew', padx=(5,0))
 
-    btn_frame2 = tk.Frame(timer_frame, bg='#f5f5f5')
-    btn_frame2.pack(pady=10, anchor='center')
-    ttk.Button(btn_frame2, text='暂停/继续', command=pause_timer).pack(side=tk.LEFT, padx=10)
-    ttk.Button(btn_frame2, text='重置', command=reset_timer).pack(side=tk.LEFT, padx=10)
+    btn_frame2 = ttk.Frame(timer_frame)
+    btn_frame2.grid(row=5, column=0, pady=10, padx=10, sticky='ew')
+    btn_frame2.grid_columnconfigure((0,1), weight=1)
+    ttk.Button(btn_frame2, text='暂停/继续', command=pause_timer).grid(row=0, column=0, sticky='ew', padx=(0,5))
+    ttk.Button(btn_frame2, text='重置', command=reset_timer).grid(row=0, column=1, sticky='ew', padx=(5,0))
+    # 绑定窗口大小变化事件，调整按钮宽度
+    def on_window_resize(event):
+        for child in btn_frame1.winfo_children():
+            child.config(width=int(btn_frame1.winfo_width()/3 - 10))  # 均分宽度
+        for child in btn_frame2.winfo_children():
+            child.config(width=int(btn_frame2.winfo_width()/2 - 10))  # 均分宽度
 
+    root.bind('<Configure>', on_window_resize)
     # 初始化显示状态
     update_work_content_state()
 #--------------------------------- End --------------------------------
