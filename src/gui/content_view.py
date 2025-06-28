@@ -22,6 +22,7 @@ def Home(root, max_width, max_height):
     print('This is home now')
     
     root.columnconfigure(0, weight=1)
+    root.rowconfigure(1, weight = 0)
 
     # Search Bar
     #-------------------------- begin ------------------------------
