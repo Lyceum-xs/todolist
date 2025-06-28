@@ -60,7 +60,7 @@ def Home(root, max_width, max_height):
 
         # Sort Bar
         #-------------------------- Begin -------------------------
-    sort_basis = ['Submission Date', 'Due Date', 'Urgency']
+    sort_basis = ['Due Date', 'Urgency', 'Importance']
     s = tk.StringVar()
     
     sort_bar = ttk.Combobox(menu_bar, width = 15, state = 'readonly', textvariable = s, values = sort_basis, font = ('consolas', 12))
@@ -498,6 +498,15 @@ def Habitclockin(root, max_width, max_height):
     target_year = nowtime['year']
     target_month = nowtime['month']
 
+    def draw_calendar(calendar):
+        r = 2
+        for day, week in calendar.items():
+            c = week % 7
+            if week == 7:
+                r += 1
+            day_button = ttk.Button(calendar_frame, text = day, style = 'Hab.TButton', width = 5)
+            day_button.grid(row = r, column = c, padx = 10, pady = 20)
+
     def update_calendar():
         for widget in calendar_frame.grid_slaves():
             row = widget.grid_info().get('row', -1)
@@ -508,13 +517,8 @@ def Habitclockin(root, max_width, max_height):
         month_label.config(text = f'{target_month} month')
 
         calendar = get_data.getcalendar(target_year, target_month)
-        r = 2
-        for day, week in calendar.items():
-            c = week % 7
-            if week == 7:
-                r += 1
-            day_button = ttk.Button(calendar_frame, text = day, style = 'Hab.TButton', width = 5)
-            day_button.grid(row = r, column = c, padx = 10, pady = 20)
+        draw_calendar(calendar)
+        
 
     def yl_game():
         nonlocal target_year
@@ -560,13 +564,7 @@ def Habitclockin(root, max_width, max_height):
         week_label.grid(row = 1, column = i, padx = 30)
 
     calendar = get_data.getcalendar(target_year, target_month)
-    r = 2
-    for day, week in calendar.items():
-        c = week % 7
-        if week == 7:
-            r += 1
-        day_button = ttk.Button(calendar_frame, text = day, style = 'Hab.TButton', width = 5)
-        day_button.grid(row = r, column = c, padx = 5, pady = 20)
+    draw_calendar(calendar)
 
     #------------------------ End ------------------------
 
