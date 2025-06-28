@@ -527,7 +527,7 @@ def Habitclockin(root, max_width, max_height):
             clockin_content.set('Clockin content')
 
             clockin_bar = tk.Entry(clockin_frame, textvariable = clockin_content, width = 45, font = ('consolas', 12))
-            clockin_bar.grid(row = 1, column = 0, pady = 45)
+            clockin_bar.grid(row = 1, column = 0, pady = 15)
 
             def clo():
                 value = clockin_content.get()
