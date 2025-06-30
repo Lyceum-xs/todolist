@@ -1,6 +1,6 @@
 from tkinter import *
 from tkinter import ttk
-import content_view
+from . import content_view
 
 # navigation bar
 #-------------------------------- begin -------------------------------
