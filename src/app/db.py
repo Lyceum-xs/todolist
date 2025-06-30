@@ -1,10 +1,17 @@
+import os
+from pathlib import Path
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker, scoped_session,declarative_base
 from contextlib import contextmanager
 from typing import Generator
 
 # 数据库配置
-DATABASE_URL = "sqlite:////Users/Zhuanz/Projects/todolist/todo.db"
+# 项目根目录 (todolist/)
+BASE_DIR = Path(__file__).resolve().parent.parent
+# 数据库文件路径，默认为项目根下 todo.db，可由环境变量覆盖
+default_db = BASE_DIR / "todo.db"
+default_db.parent.mkdir(parents=True, exist_ok=True)
+DATABASE_URL = os.getenv("DATABASE_URL", f"sqlite:///{default_db}")
 engine = create_engine(
     DATABASE_URL, connect_args={"check_same_thread": False}, future=True
 )
