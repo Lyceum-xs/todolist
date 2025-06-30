@@ -5,6 +5,9 @@ from .routers import habits
 from .db import create_tables
 from .routers import tasks
 from .routers import pomodoro
+from .db import engine                     # 已有的 engine
+from .models import Base                   # 所有 ORM 表都挂在这里
+
 
 tags_metadata = [
     {"name": "任务", "description": "任务相关接口（创建 / 查询 / 更新 / 删除 / 搜索）"}
@@ -33,5 +36,5 @@ app.include_router(habits.router)
 app.include_router(pomodoro.router)
 
 @app.on_event("startup")
-def init_db():
-    create_tables()
+def on_startup():
+    Base.metadata.create_all(bind=engine)
