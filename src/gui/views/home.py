@@ -195,9 +195,9 @@ def Home(root, max_width, max_height):
             tree_view.heading(col, text = col)
             tree_view.column(col, **settings)
 
-    '''
-    tasks = get_data.gettasks()
+    
+    tasks = services.gettasks()
     if tasks is None:
         print('No task')
-    '''
+    
 #--------------------------------- End --------------------------------
