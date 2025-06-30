@@ -1,3 +1,5 @@
+import os
+from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -37,4 +39,11 @@ app.include_router(pomodoro.router)
 
 @app.on_event("startup")
 def on_startup():
-    Base.metadata.create_all(bind=engine)
+    # 仅对 SQLite 文件数据库做“若不存在则建表”；其它数据库直接建表
+    db_url = os.getenv("DATABASE_URL", "sqlite:///./data/todo.db")
+    if db_url.startswith("sqlite"):
+        file_path = db_url.split("///", 1)[-1]
+        if not Path(file_path).exists():
+            create_tables()
+    else:
+        create_tables()

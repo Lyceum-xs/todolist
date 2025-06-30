@@ -4,7 +4,7 @@ from contextlib import contextmanager
 from typing import Generator
 
 # 数据库配置
-DATABASE_URL = "sqlite:///./todo.db"
+DATABASE_URL = "sqlite:////Users/Zhuanz/Projects/todolist/todo.db"
 engine = create_engine(
     DATABASE_URL, connect_args={"check_same_thread": False}, future=True
 )
