@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from .routers import habits 
 from .db import create_tables
 from .routers import tasks
+from .routers import pomodoro
 
 tags_metadata = [
     {"name": "任务", "description": "任务相关接口（创建 / 查询 / 更新 / 删除 / 搜索）"}
@@ -29,6 +30,7 @@ app.add_middleware(
 
 app.include_router(tasks.router)
 app.include_router(habits.router)
+app.include_router(pomodoro.router)
 
 @app.on_event("startup")
 def init_db():
