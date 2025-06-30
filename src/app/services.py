@@ -21,9 +21,11 @@ class TaskService:
     @staticmethod
     def get_task_with_children(task_id: int) -> schemas.TaskOut:
         with db_session() as db:
-            task = db.query(models.Task).options(
-                sqlalchemy.orm.joinedload(models.Task.subtasks)
-            ).get(task_id)
+            task = db.get(
+                models.Task,
+                task_id,
+                options=[sqlalchemy.orm.joinedload(models.Task.subtasks)]
+            )
             if not task:
                 raise ValueError("任务不存在")
             return schemas.TaskOut.model_validate(task)
@@ -99,9 +101,11 @@ class HabitService:
     @staticmethod
     def get_habit(habit_id: int) -> schemas.HabitOut | None:
         with db_session() as db:
-            habit = db.query(models.Habit).options(
-                sqlalchemy.orm.joinedload(models.Habit.logs)
-            ).get(habit_id)
+            habit = db.get(
+                models.Habit,
+                habit_id,
+                options=[sqlalchemy.orm.joinedload(models.Habit.logs)]
+            )
             if not habit:
                 return None
             return schemas.HabitOut.model_validate(habit)
@@ -121,7 +125,7 @@ class HabitService:
         with db_session() as db:
             try:
                 validated_data = schemas.HabitUpdate(**update_data)
-                habit = db.query(models.Habit).get(habit_id)
+                habit = db.get(models.Habit, habit_id)
                 if not habit:
                     raise ValueError("习惯不存在")
 
@@ -140,7 +144,7 @@ class HabitService:
     def delete_habit(habit_id: int) -> bool:
         with db_session() as db:
             try:
-                habit = db.query(models.Habit).get(habit_id)
+                habit = db.get(models.Habit, habit_id)
                 if not habit:
                     raise ValueError("习惯不存在")
 
@@ -157,7 +161,7 @@ class HabitService:
         with db_session() as db:
             try:
                 # 检查习惯是否存在
-                habit = db.query(models.Habit).get(habit_id)
+                habit = db.get(models.Habit, habit_id)
                 if not habit:
                     raise ValueError("习惯不存在")
 
@@ -180,7 +184,7 @@ class HabitService:
     def get_habit_logs(habit_id: int) -> list[schemas.HabitLogOut]:
         with db_session() as db:
             # 检查习惯是否存在
-            habit = db.query(models.Habit).get(habit_id)
+            habit = db.get(models.Habit, habit_id)
             if not habit:
                 raise ValueError("习惯不存在")
 

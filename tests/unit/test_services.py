@@ -1,7 +1,7 @@
 """
 pytest tests/unit/test_services.py -q
 """
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from src.app.services import TaskService, HabitService
 
@@ -12,7 +12,7 @@ def test_task_crud():
         "name": "读完《自制力》第一章",
         "description": "每日阅读任务",
         "priority": 2,
-        "due_date": (datetime.utcnow() + timedelta(days=3)).isoformat()
+        "due_date": (datetime.now(timezone.utc) + timedelta(days=3)).isoformat()
     }
     task = TaskService.create_task(task_in)
     assert task.id > 0
