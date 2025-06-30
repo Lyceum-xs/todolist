@@ -1,6 +1,6 @@
 from tkinter import *
 from tkinter import ttk
-import task_item
+from . import task_item
 
 
 root = Tk()

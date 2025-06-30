@@ -5,7 +5,7 @@ from tkinter import *
 from tkinter import ttk
 import tkinter as tk
 from turtle import back
-import get_data
+from . import get_data
 
 # clear all widgets in a frame
 #-------------------------------- Begin -------------------------------
