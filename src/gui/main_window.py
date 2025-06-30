@@ -1,6 +1,7 @@
 from tkinter import *
 from tkinter import ttk
-from . import task_item
+from .widgets.navigation_bar import NavigationBar
+from .widgets.title_bar import TitleBar
 
 
 root = Tk()
@@ -36,8 +37,8 @@ def do_move(event):
 
 # create a navigation bar, a title bar and a content bar
 #----------------------- Begin ------------------------
-nav_bar = task_item.NavigationBar(root, w, h)
-title_bar = task_item.TitleBar(root, w, h)
+nav_bar = NavigationBar(root, w, h)
+title_bar = TitleBar(root, w, h)
 #------------------------ End -------------------------
 
 
