@@ -1,0 +1,665 @@
+openapi: 3.1.0
+info:
+  title: 待办事项后端
+  description: 一个简洁的 Todo-List API，用于演示 FastAPI + SQLAlchemy 的中文化接口。
+  version: 0.1.0
+paths:
+  /tasks:
+    post:
+      operationId: create_task_tasks_post
+      summary: 创建任务
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      tags:
+        - 任务
+    get:
+      operationId: list_tasks_tasks_get
+      summary: 任务列表
+      parameters:
+        - name: status
+          in: query
+          description: completed | pending | all
+          required: false
+          schema:
+            description: completed | pending | all
+            anyOf:
+              - type: string
+              - type: 'null'
+            title: Status
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TaskOut'
+                title: Response List Tasks Tasks Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      tags:
+        - 任务
+  '/tasks/{task_id}':
+    get:
+      operationId: get_task_tasks__task_id__get
+      summary: 获取任务
+      parameters:
+        - name: task_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            title: Task Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      tags:
+        - 任务
+    patch:
+      operationId: update_task_tasks__task_id__patch
+      summary: 更新任务
+      parameters:
+        - name: task_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            title: Task Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      tags:
+        - 任务
+    delete:
+      operationId: delete_task_tasks__task_id__delete
+      summary: 删除任务
+      parameters:
+        - name: task_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            title: Task Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      tags:
+        - 任务
+  /tasks/search:
+    get:
+      operationId: search_tasks_tasks_search_get
+      summary: 搜索任务
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            title: Q
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TaskOut'
+                title: Response Search Tasks Tasks Search Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      tags:
+        - 任务
+  '/tasks/{task_id}/children_count':
+    get:
+      operationId: get_children_count_tasks__task_id__children_count_get
+      summary: 获取孩子数量
+      parameters:
+        - name: task_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            title: Task Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      tags:
+        - 任务
+  '/tasks/{task_id}/subtree':
+    get:
+      operationId: get_subtree_tasks__task_id__subtree_get
+      summary: 任务子树
+      parameters:
+        - name: task_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            title: Task Id
+        - name: mode
+          in: query
+          description: 遍历方式 bfs | dfs
+          required: false
+          schema:
+            description: 遍历方式 bfs | dfs
+            type: string
+            default: bfs
+            pattern: ^(bfs|dfs)$
+            title: Mode
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TaskOut'
+                title: Response Get Subtree Tasks  Task Id  Subtree Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      tags:
+        - 任务
+  /habits:
+    get:
+      operationId: list_habits_habits_get
+      summary: 习惯列表
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/HabitOut'
+                title: Response List Habits Habits Get
+      tags:
+        - 习惯
+    post:
+      operationId: create_habit_habits_post
+      summary: 创建习惯
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HabitCreate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HabitOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      tags:
+        - 习惯
+  '/habits/{habit_id}/log':
+    post:
+      operationId: check_in_habits__habit_id__log_post
+      summary: 打卡
+      parameters:
+        - name: habit_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            title: Habit Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HabitLogCreate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      tags:
+        - 习惯
+  /pomodoros/:
+    get:
+      operationId: list_pomodoros_pomodoros__get
+      summary: 番茄钟列表
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PomodoroOut'
+                title: Response List Pomodoros Pomodoros  Get
+      tags:
+        - 番茄钟
+    post:
+      operationId: start_pomodoro_pomodoros__post
+      summary: 开始番茄钟
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PomodoroStart'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PomodoroOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      tags:
+        - 番茄钟
+  '/pomodoros/{session_id}/stop':
+    patch:
+      operationId: stop_pomodoro_pomodoros__session_id__stop_patch
+      summary: 结束番茄钟
+      parameters:
+        - name: session_id
+          in: path
+          required: true
+          schema:
+            type: integer
+            title: Session Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PomodoroOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      tags:
+        - 番茄钟
+components:
+  schemas:
+    HTTPValidationError:
+      type: object
+      properties:
+        detail:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          title: Detail
+      title: HTTPValidationError
+    HabitCreate:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 128
+          title: Name
+        description:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Description
+        duration:
+          type: integer
+          default: 0
+          title: Duration
+      required:
+        - name
+      title: 习惯创建
+    HabitLogCreate:
+      type: object
+      properties:
+        date:
+          anyOf:
+            - type: string
+              format: date-time
+            - type: 'null'
+          title: Date
+      title: HabitLogCreate
+    HabitLogOut:
+      type: object
+      properties:
+        id:
+          type: integer
+          title: Id
+        date:
+          type: string
+          format: date-time
+          title: Date
+      required:
+        - id
+        - date
+      title: 打卡日志详情
+    HabitOut:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 128
+          title: Name
+        description:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Description
+        duration:
+          type: integer
+          default: 0
+          title: Duration
+        id:
+          type: integer
+          title: Id
+        logs:
+          type: array
+          items:
+            $ref: '#/components/schemas/HabitLogOut'
+          default: []
+          title: Logs
+      required:
+        - name
+        - id
+      title: 习惯详情
+    PomodoroOut:
+      description: 番茄钟详情
+      type: object
+      properties:
+        id:
+          type: integer
+          title: Id
+        start_at:
+          type: string
+          format: date-time
+          title: Start At
+        end_at:
+          anyOf:
+            - type: string
+              format: date-time
+            - type: 'null'
+          title: End At
+        work_minutes:
+          type: integer
+          title: Work Minutes
+        break_minutes:
+          type: integer
+          title: Break Minutes
+        planned_seconds:
+          type: integer
+          title: Planned Seconds
+        actual_seconds:
+          anyOf:
+            - type: integer
+            - type: 'null'
+          title: Actual Seconds
+        completed:
+          type: boolean
+          title: Completed
+      required:
+        - id
+        - start_at
+        - end_at
+        - work_minutes
+        - break_minutes
+        - planned_seconds
+        - actual_seconds
+        - completed
+      title: 番茄钟详情
+    PomodoroStart:
+      description: 番茄钟启动
+      type: object
+      properties:
+        work_minutes:
+          type: integer
+          default: 25
+          maximum: 120
+          minimum: 5
+          title: 专注时长（分钟）
+        break_minutes:
+          type: integer
+          default: 5
+          maximum: 60
+          minimum: 1
+          title: 休息时长（分钟）
+      title: 番茄钟启动
+    TaskCreate:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 255
+          title: Name
+        description:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Description
+        due_date:
+          anyOf:
+            - type: string
+              format: date-time
+            - type: 'null'
+          title: Due Date
+        importance:
+          type: boolean
+          default: false
+          title: Importance
+        urgent:
+          type: boolean
+          default: false
+          title: Urgent
+        parent_id:
+          anyOf:
+            - type: integer
+            - type: 'null'
+          title: Parent Id
+      required:
+        - name
+      title: 任务创建
+    TaskOut:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 255
+          title: Name
+        description:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Description
+        due_date:
+          anyOf:
+            - type: string
+              format: date-time
+            - type: 'null'
+          title: Due Date
+        importance:
+          type: boolean
+          default: false
+          title: Importance
+        urgent:
+          type: boolean
+          default: false
+          title: Urgent
+        parent_id:
+          anyOf:
+            - type: integer
+            - type: 'null'
+          title: Parent Id
+        id:
+          type: integer
+          title: Id
+        completed:
+          type: boolean
+          title: Completed
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+      required:
+        - name
+        - id
+        - completed
+        - created_at
+        - updated_at
+      title: 任务详情
+    TaskUpdate:
+      type: object
+      properties:
+        name:
+          anyOf:
+            - type: string
+              maxLength: 255
+            - type: 'null'
+          title: Name
+        description:
+          anyOf:
+            - type: string
+            - type: 'null'
+          title: Description
+        due_date:
+          anyOf:
+            - type: string
+              format: date-time
+            - type: 'null'
+          title: Due Date
+        completed:
+          default: false
+          anyOf:
+            - type: boolean
+            - type: 'null'
+          title: Completed
+        importance:
+          default: false
+          anyOf:
+            - type: boolean
+            - type: 'null'
+          title: Importance
+        urgent:
+          default: false
+          anyOf:
+            - type: boolean
+            - type: 'null'
+          title: Urgent
+      title: 任务更新
+    ValidationError:
+      type: object
+      properties:
+        loc:
+          type: array
+          items:
+            anyOf:
+              - type: string
+              - type: integer
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+      required:
+        - loc
+        - msg
+        - type
+      title: ValidationError
+tags:
+  - name: 任务
+    description: 任务相关接口（创建 / 查询 / 更新 / 删除 / 搜索）

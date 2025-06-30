@@ -2,7 +2,7 @@ from tkinter import *
 from tkinter import ttk
 import tkinter as tk
 from ..utils import clear_frame
-from .. import get_data
+from .. import services
 
 
 # home content
@@ -110,7 +110,7 @@ def Home(root, max_width, max_height):
         for i, label in enumerate(labels):
             label.grid(row=1, column=i, sticky='ew', padx = (20, 0))
 
-        time = get_data.gettime()
+        time = services.gettime()
         year = time['year']
         month = time['month']
         day = time['day']
@@ -194,4 +194,10 @@ def Home(root, max_width, max_height):
     for col, settings in columns.items():
             tree_view.heading(col, text = col)
             tree_view.column(col, **settings)
+
+    
+    tasks = services.gettasks()
+    if tasks is None:
+        print('No task')
+    
 #--------------------------------- End --------------------------------

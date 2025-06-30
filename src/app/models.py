@@ -46,35 +46,43 @@ class Task(Base):
         nullable=False,
     )
     @property
-    #暂时实现一个简单的加权求和法，后续有优化拟合量化函数可以再改
     def priority_parameter(self) -> float:
+        """
+        计算任务优先级 (0~1)。加入时区兼容处理，避免比较
+        “offset‑aware” 与 “offset‑naive” datetime 抛错。
+        """
         if self.completed:
-            return 0.0  # 已完成任务最低优先级
+            return 0.0
+
         importance_weight = 0.45
         urgent_weight = 0.45
-        due_date_weight = 0.1
+        due_date_weight = 0.10
 
-        urgent_value = 1 if self.urgent else 0
         importance_value = 1 if self.importance else 0
+        urgent_value = 1 if self.urgent else 0
 
-        # 处理截止日期属性，如果有截止日期，计算距离当前时间的天数；没有则设为一个较大值
-        now =datetime.now(timezone.utc)
+        now = datetime.now(timezone.utc)  # 始终使用带时区的当前时间
+
         if self.due_date:
-            if self.due_date < now:
-                due_date_value = 1.0
+            due = self.due_date
+
+            # 若数据库里存储的是 naive datetime，则假定为 UTC
+            if due.tzinfo is None or due.tzinfo.utcoffset(due) is None:
+                due = due.replace(tzinfo=timezone.utc)
+
+            if due < now:
+                due_date_value = 1.0  # 已超期
             else:
-                days_to_due = (self.due_date - datetime.now(timezone.utc)).days
-                days_to_due = max(days_to_due, 0)
+                days_to_due = max((due - now).days, 0)
                 due_date_value = 1 / (days_to_due + 1)
         else:
-            due_date_value = 0
+            due_date_value = 0.0  # 无截止日期
 
-        priority = (
-            importance_value * importance_weight +
-            urgent_value * urgent_weight +
-            due_date_value * due_date_weight
+        return (
+            importance_value * importance_weight
+            + urgent_value * urgent_weight
+            + due_date_value * due_date_weight
         )
-        return priority
 
 
 class Habit(Base):
@@ -100,3 +108,18 @@ class HabitLog(Base):
     date: Mapped[da] = mapped_column(Date, default=lambda: da.today(), nullable=False)
 
     habit: Mapped["Habit"] = relationship("Habit", back_populates="logs")
+
+class PomodoroSession(Base):
+    __tablename__ = "pomodoros"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    start_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    end_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+    work_minutes: Mapped[int] = mapped_column(Integer, default=25, nullable=False)
+    break_minutes: Mapped[int] = mapped_column(Integer, default=5, nullable=False)
+
+    planned_seconds: Mapped[int] = mapped_column(Integer, nullable=False)
+    actual_seconds: Mapped[int | None] = mapped_column(Integer)
+
+    completed: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)

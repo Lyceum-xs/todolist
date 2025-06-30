@@ -1,5 +1,6 @@
 import sqlalchemy
 from sqlalchemy.orm import Session
+from datetime import datetime, UTC
 from . import models, schemas
 from .db import db_session
 from .crud import create_task, get_task, get_tasks, update_task, delete_task
@@ -193,3 +194,36 @@ class HabitService:
             ).all()
 
             return [schemas.HabitLogOut.model_validate(log) for log in logs]
+
+class PomodoroService:
+    @staticmethod
+    def start(data: schemas.PomodoroStart) -> models.PomodoroSession:
+        with db_session() as db:
+            sess = models.PomodoroSession(
+                start_at=datetime.now(UTC),
+                work_minutes=data.work_minutes,
+                break_minutes=data.break_minutes,
+                planned_seconds=data.work_minutes * 60,
+            )
+            db.add(sess)
+            db.commit()
+            db.refresh(sess)
+            return sess
+
+    @staticmethod
+    def stop(session_id: int) -> models.PomodoroSession:
+        with db_session() as db:
+            sess = db.get(models.PomodoroSession, session_id)
+            if not sess:
+                raise ValueError("Pomodoro not found")
+            sess.end_at = datetime.now(UTC)
+            sess.actual_seconds = int((sess.end_at - sess.start_at).total_seconds())
+            sess.completed = True
+            db.commit()
+            db.refresh(sess)
+            return sess
+
+    @staticmethod
+    def list_all():
+        with db_session() as db:
+            return db.query(models.PomodoroSession).order_by(models.PomodoroSession.start_at.desc()).all()
