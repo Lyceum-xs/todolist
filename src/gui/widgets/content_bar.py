@@ -10,7 +10,7 @@ from ..views.habitclockin import Habitclockin
 def ContentBar(root, max_width, max_height):
     style = ttk.Style()
 
-    style.configure('Con.TFrame', background = '#C0C0C0')
+    style.configure('Con.TFrame')
 
     content_frame = ttk.Frame(root, style = 'Con.TFrame')
     x_place = int(max_width * 0.3)

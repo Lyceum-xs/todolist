@@ -157,8 +157,41 @@ def Home(root, max_width, max_height):
         #--------------------------- End --------------------------
     #--------------------------- End --------------------------
 
-    #task list
+    #task tree view
+    root.rowconfigure(2, weight = 1)
+    task_frame = ttk.Frame(root)
+    task_frame.grid(row = 2, column = 0, sticky = 'nsew')
     
+    task_frame.columnconfigure(0, weight = 1)
+    task_frame.rowconfigure(0, weight = 1)
+    
+    vsb = ttk.Scrollbar(task_frame, orient="vertical")
+    hsb = ttk.Scrollbar(task_frame, orient="horizontal")
 
+    tree_view = ttk.Treeview(
+        task_frame, 
+        columns = ('due_date', 'urgency', 'importance'), 
+        yscrollcommand=vsb.set, 
+        xscrollcommand=hsb.set,
+        show = 'tree headings',
+        selectmode = 'extended'
+        )
+    tree_view.grid(row = 0, column = 0, sticky = 'nsew')
 
+    vsb.config(command = tree_view.yview)
+    hsb.config(command = tree_view.xview)
+    vsb.grid(row = 0, column = 1, sticky = 'ns')
+    hsb.grid(row = 1, column = 0, sticky = 'ew')
+
+    tree_view.heading('#0', text = 'name', anchor = tk.W)
+    tree_view.column('#0', width=200, minwidth=150, anchor = tk.W)
+
+    columns = {
+        'due_date' : {'width' : 100, 'anchor' : tk.W},
+        'urgency' : {'width' : 100, 'anchor' : tk.W},
+        'importance' : {'width' : 100, 'anchor' : tk.W}
+        }
+    for col, settings in columns.items():
+            tree_view.heading(col, text = col)
+            tree_view.column(col, **settings)
 #--------------------------------- End --------------------------------
