@@ -1,4 +1,10 @@
 from datetime import datetime
+import sys
+import os
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+
+from src.app import services
 
 def gettime():
     nowtime = datetime.now()
@@ -23,5 +29,8 @@ def getcalendar(year, month):
         calendar.update({day : week})
     
     return calendar
+
+def gettasks():
+    return services.get_tasks()
 
 
