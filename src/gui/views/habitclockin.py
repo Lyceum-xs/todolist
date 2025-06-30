@@ -2,7 +2,7 @@ from tkinter import *
 from tkinter import ttk
 import tkinter as tk
 from ..utils import clear_frame
-from .. import get_data 
+from .. import services 
 
 # Habitclockin content
 #-------------------------------- begin -------------------------------
@@ -32,7 +32,7 @@ def Habitclockin(root, max_width, max_height):
 
     clockin_frame.columnconfigure(0, weight = 1)
 
-    nowtime = get_data.gettime()
+    nowtime = services.gettime()
     target_year = nowtime['year']
     target_month = nowtime['month']
 
@@ -105,7 +105,7 @@ def Habitclockin(root, max_width, max_height):
         year_label.config(text = f'{target_year} year')
         month_label.config(text = f'{target_month} month')
 
-        calendar = get_data.getcalendar(target_year, target_month)
+        calendar = services.getcalendar(target_year, target_month)
         draw_calendar(calendar)
 
     def yl_game():
@@ -151,7 +151,7 @@ def Habitclockin(root, max_width, max_height):
         week_label = ttk.Label(calendar_frame, text = week, style = 'Hab.TLabel')
         week_label.grid(row = 1, column = i, padx = 30)
 
-    calendar = get_data.getcalendar(target_year, target_month)
+    calendar = services.getcalendar(target_year, target_month)
     draw_calendar(calendar)
 
     def back_to_today():
