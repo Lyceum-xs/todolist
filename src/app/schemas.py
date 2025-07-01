@@ -1,5 +1,5 @@
 from datetime import datetime
-from pydantic import BaseModel, Field , ConfigDict
+from pydantic import BaseModel, Field , ConfigDict, field_serializer
 from typing_extensions import Annotated
 
 class TaskBase(BaseModel):
@@ -22,8 +22,14 @@ class TaskUpdate(BaseModel):
     completed: bool | None = False
     importance: bool | None = False
     urgent: bool | None = False
+    parent_id: int | None = None
 
     model_config = ConfigDict(title= "任务更新")
+
+    @field_serializer('parent_id')
+    def serialize_parent_id(self, parent_id: int | None, _info):
+        """当从数据库取出的 parent_id 是 None 时，在接口返回中将其转换为 0"""
+        return 0 if parent_id is None else parent_id
 
 class TaskOut(TaskBase):
     id: int
