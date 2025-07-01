@@ -1,6 +1,7 @@
 import sqlalchemy
 from sqlalchemy.orm import Session
 from datetime import datetime, UTC
+from datetime import date, timedelta
 from . import models, schemas
 from .db import db_session
 from .crud import create_task, get_task, get_tasks, update_task, delete_task
@@ -161,10 +162,28 @@ class HabitService:
     def create_habit_log(habit_id: int, log_data: dict) -> schemas.HabitLogOut:
         with db_session() as db:
             try:
-                # 检查习惯是否存在
                 habit = db.get(models.Habit, habit_id)
                 if not habit:
                     raise ValueError("习惯不存在")
+
+                # 校验打卡间隔 (原 `habits.py` 中的逻辑)
+                # 注意：这里我们假设 `duration` 字段代表打卡间隔（天）
+                last_log = (
+                    db.query(models.HabitLog)
+                    .filter(models.HabitLog.habit_id == habit_id)
+                    .order_by(models.HabitLog.date.desc())
+                    .first()
+                )
+
+                log_date = log_data.get("date")
+                if isinstance(log_date, datetime): # pydantic v2 可能会将 date-string 转为 datetime
+                    log_date = log_date.date()
+                if not log_date:
+                    log_date = date.today()
+
+                # 使用 duration 作为间隔
+                if last_log and (log_date - last_log.date).days < habit.duration:
+                    raise ValueError(f"打卡过于频繁，请在 {(last_log.date + timedelta(days=habit.duration)).isoformat()} 之后再试")
 
                 validated_data = schemas.HabitLogCreate(**log_data)
                 log = models.HabitLog(
@@ -216,8 +235,14 @@ class PomodoroService:
             sess = db.get(models.PomodoroSession, session_id)
             if not sess:
                 raise ValueError("Pomodoro not found")
-            sess.end_at = datetime.now(UTC)
-            sess.actual_seconds = int((sess.end_at - sess.start_at).total_seconds())
+            sess.end_at = datetime.now(UTC)  # 这是带时区的
+            # 在计算前，确保 start_at 也是带时区的
+            start_time = sess.start_at
+            if start_time.tzinfo is None:
+                start_time = start_time.replace(tzinfo=UTC)
+
+            # 使用处理过的 start_time 进行计算
+            sess.actual_seconds = int((sess.end_at - start_time).total_seconds())
             sess.completed = True
             db.commit()
             db.refresh(sess)
