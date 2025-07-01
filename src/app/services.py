@@ -94,6 +94,13 @@ class HabitService:
         habits = crud.get_all_habits(db)
         return [schemas.HabitOut.model_validate(habit) for habit in habits]
 
+
+    @staticmethod
+    def delete_habit(db: Session, habit_id: int):
+        """删除习惯"""
+        if not crud.delete_habit:
+            raise ValueError("习惯不存在")
+
     @staticmethod
     def create_habit_log(db: Session, habit_id: int, log_data: dict) -> schemas.HabitLogOut:
         """创建打卡记录"""
@@ -148,3 +155,4 @@ class HabitService:
             current_date -= timedelta(days=1)
 
         return streak
+
