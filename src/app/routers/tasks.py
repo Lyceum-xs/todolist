@@ -2,16 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from .. import crud, models, schemas
-from ..db import SessionLocal
+from ..db import get_db
 
 router = APIRouter(prefix="/tasks", tags=["任务"])
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 @router.post("", response_model=schemas.TaskOut, status_code=201, summary="创建任务")
 def create_task(data: schemas.TaskCreate, db: Session = Depends(get_db)):

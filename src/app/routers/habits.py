@@ -2,17 +2,10 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from datetime import date, timedelta
 
-from ..db import SessionLocal
+from ..db import get_db
 from .. import models, schemas
 
 router = APIRouter(prefix="/habits", tags=["习惯"])
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 
 @router.post("", response_model=schemas.HabitOut, summary="创建习惯")

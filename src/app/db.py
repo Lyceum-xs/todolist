@@ -47,3 +47,10 @@ def db_session() -> Generator[Session, None, None]:
         raise
     finally:
         db.close()      # 4. 确保关闭
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
