@@ -1,3 +1,4 @@
+from os import name
 from tkinter import *
 from tkinter import ttk
 import tkinter as tk
@@ -50,8 +51,8 @@ def Home(root, max_width, max_height):
     menu_bar.grid(row = 1, column = 0, sticky = 'ew', pady=(10, 0))
 
 
-        # Sort Bar
-        #-------------------------- Begin -------------------------
+    # Sort Bar
+    #-------------------------- Begin -------------------------
     sort_basis = ['Due Date', 'Urgency', 'Importance']
     s = tk.StringVar()
     
@@ -64,15 +65,15 @@ def Home(root, max_width, max_height):
         print(f'Get sort basis: {s.get()}')
 
     sort_bar.bind('<<ComboboxSelected>>', select)
-        #--------------------------- End --------------------------
+    #--------------------------- End --------------------------
 
 
-        # add none
+    # add none
     menu_bar.columnconfigure(1, weight=1)
 
 
-        # Add Button
-        #-------------------------- Begin -------------------------
+    # Add Button
+    #-------------------------- Begin -------------------------
     def add():
         print(f'task is adding...')
 
@@ -80,8 +81,11 @@ def Home(root, max_width, max_height):
         window.title('Add New Task')
         window.geometry(f'{max_width}x{int(max_height * 0.5)}+{max_width}+{int(max_height * 0.5)}')
 
+        window.transient(root)
+        window.grab_set()
+
         input_frame = ttk.Frame(window)
-        input_frame.grid(row=0, column=0, columnspan=2, pady=40, sticky='nsew')
+        input_frame.grid(row=0, column=0, columnspan=2, pady=25, sticky='nsew')
 
         ttk.Label(input_frame, text = 'Task Name:', font = ('consolas', 14)).grid(row = 0, column = 0, padx = (120, 0))
 
@@ -134,6 +138,27 @@ def Home(root, max_width, max_height):
         for i, spinbox in enumerate(spinboxes):
             spinbox.grid(row=2, column=i, padx=(20, 0), pady=5, sticky='ew')
 
+        Radio_frame = ttk.Frame(window)
+        Radio_frame.grid(row = 3, column = 0)
+
+        u_label = ttk.Label(Radio_frame, text = 'Urgency:', style = 'Home.TLabel')
+        i_label = ttk.Label(Radio_frame, text = 'Importance:', style = 'Home.TLabel')
+        u_label.grid(row = 0, column = 0, pady = 10)
+        i_label.grid(row = 1, column = 0)
+
+        option_u = tk.StringVar()
+        u_radiobutton_1 = tk.Radiobutton(Radio_frame, text = 'True', variable = option_u, value = True)
+        u_radiobutton_2 = tk.Radiobutton(Radio_frame, text = 'False', variable = option_u, value = False)
+        u_radiobutton_2.select()
+        u_radiobutton_1.grid(row = 0, column = 1)
+        u_radiobutton_2.grid(row = 0, column = 2)
+        option_i = tk.StringVar()
+        i_radiobutton_1 = tk.Radiobutton(Radio_frame, text = 'True', variable = option_i, value = True)
+        i_radiobutton_2 = tk.Radiobutton(Radio_frame, text = 'False', variable = option_i, value = False)
+        i_radiobutton_2.select()
+        i_radiobutton_1.grid(row = 1, column = 1)
+        i_radiobutton_2.grid(row = 1, column = 2)
+        
 
         def close():
             window.destroy()
@@ -143,15 +168,15 @@ def Home(root, max_width, max_height):
             close()
 
         def submit():
-            print(f'Submit succeed:[taskname:{taskname.get()},due time:{dl_year.get()}/{dl_month.get()}/{dl_day.get()} {dl_hour.get()}:{dl_minute.get()}]')
             services.addtask({
                 'name' : taskname.get(), 
-                'description' : 'test_1',
+                'description' : 'test',
                 'due_date' : services.create_datetime(int(dl_year.get()), int(dl_month.get()), int(dl_day.get())),
-                'importance' : True,
-                'urgent' : False,
+                'importance' : option_i.get(),
+                'urgent' : option_u.get(),
                 'parent_id' : None
                 })
+            update_treeview()
             close()
         
         cancel_button = ttk.Button(window, command = cancel, text = 'cancel', style = 'Home.TButton')
@@ -162,8 +187,9 @@ def Home(root, max_width, max_height):
 
     add_button = ttk.Button(menu_bar, command = add, text = '+ Add', width = 6, style = 'Home.TButton')
     add_button.grid(row = 0, column = 2, padx = (0, 5))
-        #--------------------------- End --------------------------
     #--------------------------- End --------------------------
+    #--------------------------- End --------------------------
+
 
     #task tree view
     root.rowconfigure(2, weight = 1)
@@ -178,7 +204,7 @@ def Home(root, max_width, max_height):
 
     tree_view = ttk.Treeview(
         task_frame, 
-        columns = ('due_date', 'urgency', 'importance'), 
+        columns = ('due_date', 'urgency', 'importance', 'completed'), 
         yscrollcommand=vsb.set, 
         xscrollcommand=hsb.set,
         show = 'tree headings',
@@ -192,12 +218,13 @@ def Home(root, max_width, max_height):
     hsb.grid(row = 1, column = 0, sticky = 'ew')
 
     tree_view.heading('#0', text = 'name', anchor = tk.W)
-    tree_view.column('#0', width=200, minwidth=150, anchor = tk.W)
+    tree_view.column('#0', width=150, minwidth=100, anchor = tk.W)
 
     columns = {
-        'due_date' : {'width' : 100, 'anchor' : tk.W},
-        'urgency' : {'width' : 100, 'anchor' : tk.W},
-        'importance' : {'width' : 100, 'anchor' : tk.W}
+        'due_date' : {'width' : 150, 'anchor' : tk.W},
+        'urgency' : {'width' : 70, 'anchor' : tk.W},
+        'importance' : {'width' : 70, 'anchor' : tk.W},
+        'completed' : {'width' : 70, 'anchor' : tk.W}
         }
     for col, settings in columns.items():
             tree_view.heading(col, text = col)
@@ -205,8 +232,17 @@ def Home(root, max_width, max_height):
 
     
     tasks = services.gettasks()
-    if tasks is None:
+    if not tasks:
         print('No task')
     else:
         print(tasks)
+
+    def update_treeview():
+        tree_view.delete(*tree_view.get_children())
+
+        tasks = services.gettasks()
+        for task in tasks:
+           tree_view.insert('', 'end', text = task.name, values = (task.due_date, task.urgent, task.importance, task.completed))
+
+    update_treeview()
 #--------------------------------- End --------------------------------
