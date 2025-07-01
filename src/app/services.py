@@ -1,10 +1,15 @@
 import sqlalchemy
 from sqlalchemy.orm import Session
-from datetime import datetime, UTC
 from datetime import date, timedelta
 from . import models, schemas
 from .db import db_session
 from .crud import create_task, get_task, get_tasks, update_task, delete_task
+
+try:
+    from datetime import UTC  # Python 3.11+
+except ImportError:
+    from datetime import timezone
+    UTC = timezone.utc
 
 class TaskService:
 
