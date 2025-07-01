@@ -62,7 +62,7 @@ def get_habit_logs(habit_id: int):
 @router.get(
     "/{habit_id}/streak",
     response_model=int,
-    summary="【新增】获取当前持续打卡天数"
+    summary="获取当前持续打卡天数"
 )
 def get_habit_streak(habit_id: int):
     """
