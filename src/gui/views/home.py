@@ -70,11 +70,162 @@ def Home(root, max_width, max_height):
 
     # add none
     menu_bar.columnconfigure(1, weight=1)
+    
+    add_button = ttk.Button(menu_bar, command = lambda: add(None), text = '+ Add', width = 6, style = 'Home.TButton')
+    add_button.grid(row = 0, column = 3, padx = 5)
+
+    #--------------------------- End --------------------------
 
 
-    # Add Button
+    #task tree view
     #-------------------------- Begin -------------------------
-    def add():
+    root.rowconfigure(2, weight = 1)
+    task_frame = ttk.Frame(root)
+    task_frame.grid(row = 2, column = 0, sticky = 'nsew')
+    
+    task_frame.columnconfigure(0, weight = 1)
+    task_frame.rowconfigure(0, weight = 1)
+    
+    vsb = ttk.Scrollbar(task_frame, orient="vertical")
+    hsb = ttk.Scrollbar(task_frame, orient="horizontal")
+
+    tree_view = ttk.Treeview(
+        task_frame, 
+        columns = ('due_date', 'urgency', 'importance', 'completed'), 
+        yscrollcommand=vsb.set, 
+        xscrollcommand=hsb.set,
+        show = 'tree headings',
+        selectmode = 'extended'
+        )
+    tree_view.grid(row = 0, column = 0, sticky = 'nsew')
+
+    vsb.config(command = tree_view.yview)
+    hsb.config(command = tree_view.xview)
+    vsb.grid(row = 0, column = 1, sticky = 'ns')
+    hsb.grid(row = 1, column = 0, sticky = 'ew')
+
+    tree_view.heading('#0', text = 'name', anchor = tk.W)
+    tree_view.column('#0', width=150, minwidth=100, anchor = tk.W)
+
+    columns = {
+        'due_date' : {'width' : 150, 'anchor' : tk.W},
+        'urgency' : {'width' : 70, 'anchor' : tk.W},
+        'importance' : {'width' : 70, 'anchor' : tk.W},
+        'completed' : {'width' : 70, 'anchor' : tk.W}
+        }
+    for col, settings in columns.items():
+            tree_view.heading(col, text = col)
+            tree_view.column(col, **settings)
+
+    
+    tasks = services.gettasks()
+    if not tasks:
+        print('No task')
+    else:
+        print(tasks)
+
+    def update_treeview():
+        tree_view.delete(*tree_view.get_children())
+
+        tasks = services.gettasks()
+
+        task_id_to_tree_id = {}
+
+        parent = ''
+        for task in tasks:
+            if task.parent_id is None:
+                parent = ''
+            else:
+                parent = task_id_to_tree_id[task.parent_id]
+            tree_id = tree_view.insert(parent, 'end', text = task.name, values = (task.due_date, task.urgent, task.importance, task.completed), tags = (task.id,))
+            task_id_to_tree_id.update({task.id : tree_id})
+
+    update_treeview()
+
+    def show_context_menu(event):
+        item = tree_view.identify_row(event.y)
+        if item:
+            tree_view.selection_set(item)
+
+            menu = tk.Menu(root, tearoff = 0)
+
+            menu.add_command(label = 'Rename', command = lambda: rename_item(item))
+            menu.add_command(label = 'Delete', command = lambda: delete_item(item))
+            menu.add_command(label = 'Done', command = lambda: done_item(item))
+            menu.add_command(label = 'New child', command = lambda: newchild_item(item))
+            menu.post(event.x_root, event.y_root)
+
+    tree_view.bind('<Button-3>', show_context_menu)
+
+    def rename_item(item):
+        if not item:
+            return
+        # get now position
+        x, y, width, height = tree_view.bbox(item, column="#0")
+        
+        # get now text
+        current_text = tree_view.item(item, "text")
+        
+        # create edit
+        edit_entry = ttk.Entry(tree_view)
+        edit_entry.insert(0, current_text)
+        edit_entry.select_range(0, tk.END)
+        edit_entry.focus()
+        
+        # locate edit
+        edit_entry.place(x=x, y=y, width=width, height=height)
+        
+        edit_entry.bind("<Return>", lambda e: save_rename(item))
+        edit_entry.bind("<Escape>", lambda e: cancel_rename())
+        edit_entry.bind("<FocusOut>", lambda e: save_rename(item))
+    
+        def save_rename(item):
+            new_name = edit_entry.get()
+            tree_view.item(item, text=new_name)
+        
+            edit_entry.destroy()
+    
+        def cancel_rename(e=None):
+            if edit_entry.winfo_exists(): 
+                edit_entry.destroy()
+
+    def delete_item(item_id):
+        tags = tree_view.item(item_id, 'tags')
+        if tags:
+            task_id = tags[0]
+            services.deltask(task_id)
+            update_treeview()
+
+    def done_item(item):
+        tags = tree_view.item(item, 'tags')
+        services.updatetask(tags[0], {'completed' : True})
+        '''
+        task = services.gettask(tags[0])
+        if task.parent_id is not None:
+            parent_task = services.gettask(task.parent_id)
+            children = services.getchildren(task.parent_id)
+
+            print(parent_task)
+            print(children)
+
+            all_done = True
+            for child in children:
+                if not child.completed:
+                    all_done = False
+
+            if all_done:
+                services.updatetask(task.parent_id, {'completed' : True})
+        '''
+        update_treeview()
+
+    def newchild_item(item):
+        tags = tree_view.item(item, 'tags')
+        add(tags[0])
+
+
+    # Add
+    #-------------------------- Begin -------------------------
+    def add(parent_id):
         print(f'task is adding...')
 
         window = tk.Toplevel(root)
@@ -174,7 +325,7 @@ def Home(root, max_width, max_height):
                 'due_date' : services.create_datetime(int(dl_year.get()), int(dl_month.get()), int(dl_day.get())),
                 'importance' : option_i.get(),
                 'urgent' : option_u.get(),
-                'parent_id' : None
+                'parent_id' : parent_id
                 })
             update_treeview()
             close()
@@ -184,65 +335,39 @@ def Home(root, max_width, max_height):
 
         submit_button = ttk.Button(window, command = submit, text = 'submit', style = 'Home.TButton')
         submit_button.place(width = 80, height = 25, x = max_width - 90, y = int(max_height * 0.5 - 30))
-
-    add_button = ttk.Button(menu_bar, command = add, text = '+ Add', width = 6, style = 'Home.TButton')
-    add_button.grid(row = 0, column = 2, padx = (0, 5))
-    #--------------------------- End --------------------------
     #--------------------------- End --------------------------
 
+    is_expanded = False
+    def exp_col():
+        nonlocal is_expanded
+        def expand_all():
+            def expand(item):
+                tree_view.item(item, open = True)
+                for child in tree_view.get_children(item):
+                    expand(child)
 
-    #task tree view
-    root.rowconfigure(2, weight = 1)
-    task_frame = ttk.Frame(root)
-    task_frame.grid(row = 2, column = 0, sticky = 'nsew')
-    
-    task_frame.columnconfigure(0, weight = 1)
-    task_frame.rowconfigure(0, weight = 1)
-    
-    vsb = ttk.Scrollbar(task_frame, orient="vertical")
-    hsb = ttk.Scrollbar(task_frame, orient="horizontal")
+            for item in tree_view.get_children():
+                expand(item)
+            
+        def collapse_all():
+            def collapse(item):
+                tree_view.item(item, open = False)
+                for child in tree_view.get_children(item):
+                    collapse(child)
 
-    tree_view = ttk.Treeview(
-        task_frame, 
-        columns = ('due_date', 'urgency', 'importance', 'completed'), 
-        yscrollcommand=vsb.set, 
-        xscrollcommand=hsb.set,
-        show = 'tree headings',
-        selectmode = 'extended'
-        )
-    tree_view.grid(row = 0, column = 0, sticky = 'nsew')
+            for item in tree_view.get_children():
+                collapse(item)
 
-    vsb.config(command = tree_view.yview)
-    hsb.config(command = tree_view.xview)
-    vsb.grid(row = 0, column = 1, sticky = 'ns')
-    hsb.grid(row = 1, column = 0, sticky = 'ew')
+        if not is_expanded:
+            exp_col_button.config(text = 'Collapse all')
+            expand_all()
+            is_expanded = True
+        else:
+            exp_col_button.config(text = 'Expand all')
+            collapse_all()
+            is_expanded = False
 
-    tree_view.heading('#0', text = 'name', anchor = tk.W)
-    tree_view.column('#0', width=150, minwidth=100, anchor = tk.W)
-
-    columns = {
-        'due_date' : {'width' : 150, 'anchor' : tk.W},
-        'urgency' : {'width' : 70, 'anchor' : tk.W},
-        'importance' : {'width' : 70, 'anchor' : tk.W},
-        'completed' : {'width' : 70, 'anchor' : tk.W}
-        }
-    for col, settings in columns.items():
-            tree_view.heading(col, text = col)
-            tree_view.column(col, **settings)
-
-    
-    tasks = services.gettasks()
-    if not tasks:
-        print('No task')
-    else:
-        print(tasks)
-
-    def update_treeview():
-        tree_view.delete(*tree_view.get_children())
-
-        tasks = services.gettasks()
-        for task in tasks:
-           tree_view.insert('', 'end', text = task.name, values = (task.due_date, task.urgent, task.importance, task.completed))
-
-    update_treeview()
+    exp_col_button = ttk.Button(menu_bar, command = exp_col, text = 'Expand all', style = 'Home.TButton')
+    exp_col_button.grid(row = 0, column = 2)
+    #--------------------------- End --------------------------
 #--------------------------------- End --------------------------------
