@@ -56,7 +56,7 @@ def Home(root, max_width, max_height):
     s = tk.StringVar()
     
     sort_bar = ttk.Combobox(menu_bar, width = 15, state = 'readonly', textvariable = s, values = sort_basis, font = ('consolas', 12))
-    sort_bar.grid(row = 0, column = 0, padx = (5, 0))
+    sort_bar.grid(row = 0, column = 0)
 
     sort_bar.set('Sort Basis')
 
@@ -143,7 +143,15 @@ def Home(root, max_width, max_height):
             close()
 
         def submit():
-            print(f'Submit succeed:[taskname:{taskname.get()},submit time:{year}/{month}/{day} {hour}:{minute},due time:{dl_year.get()}/{dl_month.get()}/{dl_day.get()} {dl_hour.get()}:{dl_minute.get()}]')
+            print(f'Submit succeed:[taskname:{taskname.get()},due time:{dl_year.get()}/{dl_month.get()}/{dl_day.get()} {dl_hour.get()}:{dl_minute.get()}]')
+            services.addtask({
+                'name' : taskname.get(), 
+                'description' : 'test_1',
+                'due_date' : services.create_datetime(int(dl_year.get()), int(dl_month.get()), int(dl_day.get())),
+                'importance' : True,
+                'urgent' : False,
+                'parent_id' : None
+                })
             close()
         
         cancel_button = ttk.Button(window, command = cancel, text = 'cancel', style = 'Home.TButton')
@@ -199,5 +207,6 @@ def Home(root, max_width, max_height):
     tasks = services.gettasks()
     if tasks is None:
         print('No task')
-    
+    else:
+        print(tasks)
 #--------------------------------- End --------------------------------

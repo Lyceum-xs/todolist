@@ -25,8 +25,17 @@ def getcalendar(year, month):
     
     return calendar
 
+def create_datetime(year, month, day):
+    return datetime(year, month, day)
+
 def gettasks():
     tasks = services.TaskService.get_all_tasks()
     return tasks
+
+def addtask(task):
+    services.TaskService.create_task(task)
+
+def deltask(task_id):
+    services.TaskService.delete_task(task_id)
 
 
