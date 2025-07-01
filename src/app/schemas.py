@@ -36,7 +36,7 @@ class TaskOut(TaskBase):
 class HabitBase(BaseModel):
     name: str = Field(..., max_length=128)
     description: str | None = None
-    duration: int = 0
+    duration: int| None = 0
 
     model_config = ConfigDict(title= "习惯基础信息")
 

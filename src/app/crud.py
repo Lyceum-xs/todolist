@@ -43,38 +43,6 @@ def delete_task(db: Session, task_id: int) -> bool:
     db.commit()
     return True
 
-# --------------------------------------------------------------------------- #
-# 子任务相关操作
-# --------------------------------------------------------------------------- #
 
-def get_children_count(db: Session, task_id: int) -> int:
-    return db.query(models.Task).filter(models.Task.parent_id == task_id).count()
-
-
-def bfs_subtree(db: Session, task_id: int) -> list[models.Task] | None:
-    root = db.query(models.Task).filter(models.Task.id == task_id).first()
-    if not root:
-        return None
-
-    result: list[models.Task] = []
-    queue: list[models.Task] = [root]
-    while queue:
-        node = queue.pop(0)
-        result.append(node)
-        queue.extend(node.subtasks)
-    return result
-
-
-def dfs_subtree(db: Session, task_id: int) -> list[models.Task] | None:
-    root = db.query(models.Task).filter(models.Task.id == task_id).first()
-    if not root:
-        return None
-
-    result: list[models.Task] = []
-    def _dfs(node: models.Task):
-        result.append(node)
-        for child in node.subtasks:
-            _dfs(child)
-
-    _dfs(root)
-    return result
+def get_subtasks(db: Session, parent_id: int) -> list[models.Task]:
+    return db.query(models.Task).filter(models.Task.parent_id == parent_id).all()

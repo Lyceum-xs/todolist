@@ -55,24 +55,15 @@ def delete_task(task_id: int, db: Session = Depends(get_db)):
 def search_tasks(q: str = Query(..., min_length=1), db: Session = Depends(get_db)):
     return db.query(models.Task).filter(models.Task.name.like(f"%{q}%")).all()
 
-@router.get("/{task_id:int}/children_count", response_model=int, summary="获取子任务数量")
-def get_children_count(task_id: int, db: Session = Depends(get_db)):
-    if not db.get(models.Task, task_id):
-        raise HTTPException(status_code=404, detail="Task not found")
-    return crud.get_children_count(db, task_id)
+@router.get("/{task_id:int}/children",
+            response_model=list[schemas.TaskOut],
+            summary="获取任务的直接子任务列表")
+def get_children_tasks(task_id: int, db: Session = Depends(get_db)):
 
-#BFS / DFS 返回的是 Task 对象列表，接口直接标注 response_model=list[TaskOut] 
-@router.get("/{task_id:int}/subtree", response_model=list[schemas.TaskOut], summary="任务子树")
-def get_subtree(
-    task_id: int,
-    mode: str = Query("bfs", regex="^(bfs|dfs)$", description="遍历方式 bfs | dfs"),
-    db: Session = Depends(get_db),
-):
-    if mode == "bfs":
-        nodes = crud.bfs_subtree(db, task_id)
-    else:
-        nodes = crud.dfs_subtree(db, task_id)
+    # 检查父任务是否存在
+    parent_task = db.get(models.Task, task_id)
+    if not parent_task:
+        raise HTTPException(status_code=404, detail="Parent task not found")
 
-    if not nodes:
-        raise HTTPException(404, "Task not found")
-    return nodes
+    subtasks = crud.get_subtasks(db, parent_id=task_id)
+    return subtasks
