@@ -7,8 +7,9 @@ from .. import schemas, services
 
 router = APIRouter(prefix="/habits", tags=["习惯"])
 
+
 @router.post("", response_model=schemas.HabitOut, status_code=status.HTTP_201_CREATED, summary="创建习惯")
-def create_habit(habit: schemas.HabitCreate, db: Session = Depends(get_db)):
+def create_habit(habit: schemas.HabitCreate):
     try:
         return services.HabitService.create_habit(habit.model_dump())
     except ValueError as e:
@@ -16,7 +17,7 @@ def create_habit(habit: schemas.HabitCreate, db: Session = Depends(get_db)):
 
 
 @router.get("", response_model=list[schemas.HabitOut], summary="习惯列表")
-def list_habits(db: Session = Depends(get_db)):
+def list_habits():
     return services.HabitService.get_all_habits()
 
 
@@ -24,36 +25,51 @@ def list_habits(db: Session = Depends(get_db)):
     "/{habit_id}/logs",
     response_model=schemas.HabitLogOut,
     status_code=status.HTTP_201_CREATED,
-    summary="打卡"
+    summary="为习惯打卡（每日一次）"
 )
-def create_habit_log(habit_id: int, body: schemas.HabitLogCreate, db: Session = Depends(get_db)):
+def create_habit_log(habit_id: int, body: schemas.HabitLogCreate):
     log_data = body.model_dump()
     if log_data.get("date") is None:
         log_data["date"] = date.today()
 
     try:
-        # 使用 Service 层来创建打卡记录，保持逻辑分离
         created_log = services.HabitService.create_habit_log(habit_id, log_data)
         return created_log
     except ValueError as e:
-        # 如果 Service 层抛出异常（例如习惯不存在），则返回 404
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"创建打卡记录失败: {e}")
-    
+        detail = str(e)
+        # 如果是重复打卡，返回 409 Conflict 状态码
+        if "今日已打卡" in detail:
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=detail)
+        # 如果是习惯不存在，返回 404 Not Found
+        if "习惯不存在" in detail:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=detail)
+        # 其他值错误
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=detail)
+
+
 @router.get(
     "/{habit_id}/logs",
     response_model=list[schemas.HabitLogOut],
     summary="获取习惯的打卡记录列表"
 )
-def get_habit_logs(habit_id: int, db: Session = Depends(get_db)):
+def get_habit_logs(habit_id: int):
+    try:
+        return services.HabitService.get_habit_logs(habit_id)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+
+
+@router.get(
+    "/{habit_id}/streak",
+    response_model=int,
+    summary="【新增】获取当前持续打卡天数"
+)
+def get_habit_streak(habit_id: int):
     """
-    获取指定习惯的所有打卡记录。
+    计算并返回一个习惯从今天或昨天开始的连续打卡天数。
+    - 如果今天和昨天都没打卡，则连击中断，返回 0。
     """
     try:
-        # 调用服务层的方法来获取数据
-        logs = services.HabitService.get_habit_logs(habit_id)
-        return logs
+        return services.HabitService.get_habit_streak(habit_id)
     except ValueError as e:
-        # 如果服务层抛出异常（例如习惯不存在），则返回 404
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))

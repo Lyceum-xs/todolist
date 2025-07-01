@@ -87,13 +87,16 @@ class TaskService:
             if parent.parent_id == parent_id:
                 raise ValueError("不能设置自己为父任务")
 
-
 class HabitService:
     """创建习惯"""
     @staticmethod
     def create_habit(habit_data: dict) -> schemas.HabitOut:
         with db_session() as db:
             try:
+                # 检查习惯名称是否已存在
+                if db.query(models.Habit).filter_by(name=habit_data.get("name")).first():
+                    raise ValueError(f"习惯 '{habit_data.get('name')}' 已存在。")
+                
                 validated_data = schemas.HabitCreate(**habit_data)
                 habit = models.Habit(**validated_data.model_dump())
                 db.add(habit)
@@ -171,31 +174,18 @@ class HabitService:
                 if not habit:
                     raise ValueError("习惯不存在")
 
-                # 校验打卡间隔 (原 `habits.py` 中的逻辑)
-                # 注意：这里我们假设 `duration` 字段代表打卡间隔（天）
-                last_log = (
-                    db.query(models.HabitLog)
-                    .filter(models.HabitLog.habit_id == habit_id)
-                    .order_by(models.HabitLog.date.desc())
-                    .first()
-                )
-
-                log_date = log_data.get("date")
-                if isinstance(log_date, datetime): # pydantic v2 可能会将 date-string 转为 datetime
+                log_date = log_data.get("date", date.today())
+                if isinstance(log_date, datetime):
                     log_date = log_date.date()
-                if not log_date:
-                    log_date = date.today()
 
-                # 使用 duration 作为间隔
-                if last_log and (log_date - last_log.date).days < habit.duration:
-                    raise ValueError(f"打卡过于频繁，请在 {(last_log.date + timedelta(days=habit.duration)).isoformat()} 之后再试")
+                # --- 检查今天是否已打卡 ---
+                existing_log = db.query(models.HabitLog).filter_by(
+                    habit_id=habit_id, date=log_date
+                ).first()
+                if existing_log:
+                    raise ValueError("今日已打卡，请勿重复操作。")
 
-                validated_data = schemas.HabitLogCreate(**log_data)
-                log = models.HabitLog(
-                    habit_id=habit_id,
-                    **validated_data.model_dump(exclude_unset=True)
-                )
-
+                log = models.HabitLog(habit_id=habit_id, date=log_date)
                 db.add(log)
                 db.commit()
                 db.refresh(log)
@@ -207,17 +197,45 @@ class HabitService:
     """获取习惯的打卡记录"""
     @staticmethod
     def get_habit_logs(habit_id: int) -> list[schemas.HabitLogOut]:
+        # (此方法无需修改)
         with db_session() as db:
-            # 检查习惯是否存在
             habit = db.get(models.Habit, habit_id)
             if not habit:
                 raise ValueError("习惯不存在")
-
             logs = db.query(models.HabitLog).filter(
                 models.HabitLog.habit_id == habit_id
             ).all()
-
             return [schemas.HabitLogOut.model_validate(log) for log in logs]
+
+    """获取持续打卡天数"""
+    @staticmethod
+    def get_habit_streak(habit_id: int) -> int:
+        with db_session() as db:
+            if not db.get(models.Habit, habit_id):
+                raise ValueError("习惯不存在")
+
+            logs = db.query(models.HabitLog.date).filter_by(
+                habit_id=habit_id
+            ).order_by(models.HabitLog.date.desc()).all()
+
+            if not logs:
+                return 0
+
+            streak = 0
+            today = date.today()
+            log_dates = {log.date for log in logs}
+
+            # 检查最近的打卡是否是今天或昨天
+            if today not in log_dates and (today - timedelta(days=1)) not in log_dates:
+                return 0
+
+            # 从今天或昨天开始，向前计算连续天数
+            current_date = today
+            while current_date in log_dates:
+                streak += 1
+                current_date -= timedelta(days=1)
+            
+            return streak
 
 class PomodoroService:
     @staticmethod
