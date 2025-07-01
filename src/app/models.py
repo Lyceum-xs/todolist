@@ -1,3 +1,4 @@
+from __future__ import annotations
 from datetime import datetime, timezone
 from datetime import date as da
 from sqlalchemy import Boolean, DateTime, Date , ForeignKey, Integer, String

@@ -2,16 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from .. import crud, models, schemas
-from ..db import SessionLocal
+from ..db import get_db
 
 router = APIRouter(prefix="/tasks", tags=["任务"])
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 @router.post("", response_model=schemas.TaskOut, status_code=201, summary="创建任务")
 def create_task(data: schemas.TaskCreate, db: Session = Depends(get_db)):
@@ -62,11 +55,11 @@ def delete_task(task_id: int, db: Session = Depends(get_db)):
 def search_tasks(q: str = Query(..., min_length=1), db: Session = Depends(get_db)):
     return db.query(models.Task).filter(models.Task.name.like(f"%{q}%")).all()
 
-@router.get("/{task_id:int}/children_count", summary="获取孩子数量")
+@router.get("/{task_id:int}/children_count", response_model=int, summary="获取子任务数量")
 def get_children_count(task_id: int, db: Session = Depends(get_db)):
     if not db.get(models.Task, task_id):
-        raise HTTPException(404, "Task not found")
-    return {"task_id": task_id, "children_count": crud.children_count(db, task_id)}
+        raise HTTPException(status_code=404, detail="Task not found")
+    return crud.get_children_count(db, task_id)
 
 #BFS / DFS 返回的是 Task 对象列表，接口直接标注 response_model=list[TaskOut] 
 @router.get("/{task_id:int}/subtree", response_model=list[schemas.TaskOut], summary="任务子树")

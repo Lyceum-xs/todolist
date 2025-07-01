@@ -1,34 +1,18 @@
-"""
-全局测试夹具：
-- 用 SQLite 内存库创建一次所有表，测试结束后销毁
-- monkeypatch 替换 services.db_session -> 专用 TestingSessionLocal
-"""
-import pytest, sqlalchemy as sa
-from sqlalchemy.orm import sessionmaker
-from contextlib import contextmanager
+import pytest
+from src.app.db import create_tables, drop_tables
 
-# === 你的项目导入 ===
-from src.app import models                      # Base & ORM 模型
-from src.app import services                    # 要替换 db_session 的模块
-
-# ---- 内存数据库 & 会话工厂 ----
-TEST_DB_URL = "sqlite+pysqlite:///:memory:"
-engine = sa.create_engine(TEST_DB_URL, future=True, echo=False)
-TestingSessionLocal = sessionmaker(bind=engine, expire_on_commit=False, future=True)
-
-# ---- 创建 / 销毁表 ----
-@pytest.fixture(scope="session", autouse=True)
-def _create_all():
-    models.Base.metadata.create_all(bind=engine)
-    yield
-    models.Base.metadata.drop_all(bind=engine)
-
-# ---- monkeypatch services.db_session ----
 @pytest.fixture(autouse=True)
-def _patch_db_session(monkeypatch):
-    @contextmanager
-    def _override():
-        with TestingSessionLocal() as db:
-            yield db
-    monkeypatch.setattr(services, "db_session", _override)
+def setup_db_session():
+    """
+    此设置在每次测试前运行。
+    它使用应用自身的函数来确保数据库被正确清空和重建。
+    """
+    # 1. 清空所有旧表
+    drop_tables()
+    # 2. 使用应用自己的函数创建所有新表
+    create_tables()
+    
     yield
+    
+    # 3. 测试结束后，再次清空所有表
+    drop_tables()

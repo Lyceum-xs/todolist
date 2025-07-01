@@ -56,6 +56,7 @@ class HabitLogCreate(BaseModel):
 
 class HabitLogOut(BaseModel):
     id: int
+    habit_id: int
     date: datetime
 
     model_config = ConfigDict(from_attributes=True, title= "打卡日志详情")
