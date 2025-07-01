@@ -80,11 +80,11 @@ class HabitService:
     def create_habit(db: Session, habit_data: dict) -> schemas.HabitOut:
         """创建习惯"""
         validated_data = schemas.HabitCreate(**habit_data)
-        
+
         # 检查习惯名称是否已存在
         if crud.get_habit_by_name(db, validated_data.name):
             raise ValueError(f"习惯 '{validated_data.name}' 已存在。")
-        
+
         habit = crud.create_habit(db, validated_data)
         return schemas.HabitOut.model_validate(habit)
 
@@ -104,7 +104,7 @@ class HabitService:
         log_date = log_data.get("date")
         if isinstance(log_date, datetime):
             log_date = log_date.date()
-        
+
         # 检查是否重复打卡
         if crud.get_log_by_date(db, habit_id, log_date):
             raise ValueError("今日已打卡，请勿重复操作。")
