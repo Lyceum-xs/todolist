@@ -29,7 +29,10 @@ Base = declarative_base()
 
 def create_tables():
     from . import models  # 触发模型注册
+    print('Creating tables...')
+    print(f"Database path: {DATABASE_PATH}")
     Base.metadata.create_all(bind=engine)
+    print('Tables created successfully!')
 
 def drop_tables(): # 用于清空数据库
     Base.metadata.drop_all(bind=engine)

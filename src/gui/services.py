@@ -29,13 +29,14 @@ def create_datetime(year, month, day):
     return datetime(year, month, day)
 
 def gettasks():
-    tasks = services.TaskService.get_all_tasks()
-    return tasks
+    return services.TaskService.get_all_tasks()
 
 def addtask(task):
     services.TaskService.create_task(task)
+    print(f'add {task} successfully')
 
 def deltask(task_id):
     services.TaskService.delete_task(task_id)
+    print(f'delete {task_id} successfully')
 
 
