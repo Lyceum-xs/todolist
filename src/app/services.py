@@ -1,6 +1,6 @@
 import sqlalchemy
 from sqlalchemy.orm import Session
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from . import models, schemas
 from .db import db_session
 from .crud import create_task, get_task, get_tasks, update_task, delete_task
@@ -234,44 +234,5 @@ class HabitService:
             while current_date in log_dates:
                 streak += 1
                 current_date -= timedelta(days=1)
-            
+
             return streak
-
-class PomodoroService:
-    @staticmethod
-    def start(data: schemas.PomodoroStart) -> models.PomodoroSession:
-        with db_session() as db:
-            sess = models.PomodoroSession(
-                start_at=datetime.now(UTC),
-                work_minutes=data.work_minutes,
-                break_minutes=data.break_minutes,
-                planned_seconds=data.work_minutes * 60,
-            )
-            db.add(sess)
-            db.commit()
-            db.refresh(sess)
-            return sess
-
-    @staticmethod
-    def stop(session_id: int) -> models.PomodoroSession:
-        with db_session() as db:
-            sess = db.get(models.PomodoroSession, session_id)
-            if not sess:
-                raise ValueError("Pomodoro not found")
-            sess.end_at = datetime.now(UTC)  # 这是带时区的
-            # 在计算前，确保 start_at 也是带时区的
-            start_time = sess.start_at
-            if start_time.tzinfo is None:
-                start_time = start_time.replace(tzinfo=UTC)
-
-            # 使用处理过的 start_time 进行计算
-            sess.actual_seconds = int((sess.end_at - start_time).total_seconds())
-            sess.completed = True
-            db.commit()
-            db.refresh(sess)
-            return sess
-
-    @staticmethod
-    def list_all():
-        with db_session() as db:
-            return db.query(models.PomodoroSession).order_by(models.PomodoroSession.start_at.desc()).all()

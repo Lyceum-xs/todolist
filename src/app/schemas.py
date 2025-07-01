@@ -66,22 +66,3 @@ class HabitOut(HabitBase):
     logs: list[HabitLogOut] = []
 
     model_config = ConfigDict(from_attributes=True, title= "习惯详情")
-
-class PomodoroStart(BaseModel):
-    """番茄钟启动"""
-    work_minutes: Annotated[int, Field(ge=5, le=120, title="专注时长（分钟）")] = 25
-    break_minutes: Annotated[int, Field(ge=1, le=60, title="休息时长（分钟）")] = 5
-    model_config = ConfigDict(title="番茄钟启动")
-
-class PomodoroOut(BaseModel):
-    """番茄钟详情"""
-    id: int
-    start_at: datetime
-    end_at: datetime | None
-    work_minutes: int
-    break_minutes: int
-    planned_seconds: int
-    actual_seconds: int | None
-    completed: bool
-
-    model_config = ConfigDict(from_attributes=True, title="番茄钟详情")

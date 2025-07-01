@@ -5,7 +5,6 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .routers import tasks
 from .routers import habits
-from .routers import pomodoro
 from .db import create_tables, engine
 from .models import Base
 
@@ -33,7 +32,6 @@ app.add_middleware(
 
 app.include_router(tasks.router)
 app.include_router(habits.router)
-app.include_router(pomodoro.router)
 
 @app.on_event("startup")
 def on_startup():

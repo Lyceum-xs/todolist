@@ -110,17 +110,3 @@ class HabitLog(Base):
 
     habit: Mapped["Habit"] = relationship("Habit", back_populates="logs")
 
-class PomodoroSession(Base):
-    __tablename__ = "pomodoros"
-
-    id: Mapped[int] = mapped_column(primary_key=True)
-    start_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
-    end_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
-
-    work_minutes: Mapped[int] = mapped_column(Integer, default=25, nullable=False)
-    break_minutes: Mapped[int] = mapped_column(Integer, default=5, nullable=False)
-
-    planned_seconds: Mapped[int] = mapped_column(Integer, nullable=False)
-    actual_seconds: Mapped[int | None] = mapped_column(Integer)
-
-    completed: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
