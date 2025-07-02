@@ -53,16 +53,17 @@ def Home(root, max_width, max_height):
 
     # Sort Bar
     #-------------------------- Begin -------------------------
-    sort_basis = ['Due Date', 'Urgency', 'Importance']
+    sort_basis = ['Due Date', 'Urgency', 'Importance', 'Default']
     s = tk.StringVar()
     
     sort_bar = ttk.Combobox(menu_bar, width = 15, state = 'readonly', textvariable = s, values = sort_basis, font = ('consolas', 12))
     sort_bar.grid(row = 0, column = 0)
 
-    sort_bar.set('Sort Basis')
+    sort_bar.set('Default')
 
     def select(event):
         print(f'Get sort basis: {s.get()}')
+        update_treeview()
 
     sort_bar.bind('<<ComboboxSelected>>', select)
     #--------------------------- End --------------------------
@@ -118,16 +119,30 @@ def Home(root, max_width, max_height):
             tree_view.column(col, **settings)
 
     
+    '''
     tasks = services.TaskServices.gettasks()
     if not tasks:
         print('No task')
     else:
         print(tasks)
+    '''
+
 
     def update_treeview():
+        def collect_expanded(item, _dict):
+            tags = tree_view.item(item, 'tags')
+            if tags:
+                _dict.update({int(tags[0]) : tree_view.item(item, 'open')})
+            for child in tree_view.get_children(item):
+                collect_expanded(child, _dict)
+
+        expansion_state = {}
+        for item in tree_view.get_children():
+            collect_expanded(item, expansion_state)
+        
         tree_view.delete(*tree_view.get_children())
 
-        tasks = services.TaskServices.sort_treetasks(services.TaskServices.gettasks())
+        tasks = services.TaskServices.gettasks(s.get())
 
         task_id_to_tree_id = {}
 
@@ -139,6 +154,12 @@ def Home(root, max_width, max_height):
                 parent = task_id_to_tree_id[task['parent_id']]
             tree_id = tree_view.insert(parent, 'end', text = task['name'], values = (task['due_date'], task['urgent'], task['importance'], task['completed']), tags = (task['id'],))
             task_id_to_tree_id.update({task['id'] : tree_id})
+        print(task_id_to_tree_id)
+
+        for task_id, is_expanded in expansion_state.items():
+            if task_id in task_id_to_tree_id:
+                tree_item = task_id_to_tree_id[task_id]
+                tree_view.item(tree_item, open = is_expanded)
 
     update_treeview()
 
@@ -153,6 +174,7 @@ def Home(root, max_width, max_height):
             menu.add_command(label = 'Delete', command = lambda: delete_item(item))
             menu.add_command(label = 'Done', command = lambda: done_item(item))
             menu.add_command(label = 'New child', command = lambda: newchild_item(item))
+            menu.add_command(label = 'Edit due_date', command = lambda: edit_due_date(item))
             menu.post(event.x_root, event.y_root)
 
     tree_view.bind('<Button-3>', show_context_menu)
@@ -189,18 +211,18 @@ def Home(root, max_width, max_height):
             if edit_entry.winfo_exists(): 
                 edit_entry.destroy()
 
-    def delete_item(item_id):
-        tags = tree_view.item(item_id, 'tags')
+    def delete_item(item):
+        tags = tree_view.item(item, 'tags')
         if tags:
-            task_id = tags[0]
+            task_id = int(tags[0])
             services.TaskServices.deltask(task_id)
             update_treeview()
 
     def done_item(item):
         tags = tree_view.item(item, 'tags')
-        services.TaskServices.updatetask(tags[0], {'completed' : True})
+        services.TaskServices.updatetask(int(tags[0]), {'completed' : True})
         
-        task = services.TaskServices.gettask(tags[0])
+        task = services.TaskServices.gettask(int(tags[0]))
         if task['parent_id'] is not None:
             parent_task = services.TaskServices.gettask(task['parent_id'])
             children = services.TaskServices.getchildren(task['parent_id'])
@@ -217,8 +239,101 @@ def Home(root, max_width, max_height):
 
     def newchild_item(item):
         tags = tree_view.item(item, 'tags')
-        add(tags[0])
+        add(int(tags[0]))
 
+    def edit_due_date(item):
+        if not item:
+            return
+    
+        tags = tree_view.item(item, 'tags')
+        if not tags:
+            return
+        task_id = int(tags[0])
+    
+        task = services.TaskServices.gettask(task_id)
+        if not task:
+            return
+    
+        current_due_date = task.get('due_date')
+        if current_due_date:
+            # prase ISO formatted date and time
+            import datetime
+            dt = datetime.datetime.fromisoformat(current_due_date)
+            year, month, day, hour, minute = dt.year, dt.month, dt.day, dt.hour, dt.minute
+        else:
+            # if there is no deadline, use the current time
+            time = services.TimeServices.gettime()
+            year, month, day, hour, minute = time['year'], time['month'], time['day'], time['hour'], time['minute']
+    
+        edit_window = tk.Toplevel(root)
+        edit_window.title('Edit Due Date')
+        edit_window.geometry(f'{400}x{200}+{max_width}+{int(max_height * 0.5)}')
+        edit_window.transient(root)
+        edit_window.grab_set()
+    
+        time_frame = ttk.Frame(edit_window)
+        time_frame.pack(pady=20)
+    
+        labels = [
+            ttk.Label(time_frame, text='Year:'),
+            ttk.Label(time_frame, text='Month:'),
+            ttk.Label(time_frame, text='Day:'),
+            ttk.Label(time_frame, text='Hour:'),
+            ttk.Label(time_frame, text='Minute:')
+        ]
+    
+        for i, label in enumerate(labels):
+            label.grid(row=0, column=i, padx=5)
+    
+        dl_year = tk.StringVar(value=str(year))
+        dl_month = tk.StringVar(value=str(month))
+        dl_day = tk.StringVar(value=str(day))
+        dl_hour = tk.StringVar(value=str(hour))
+        dl_minute = tk.StringVar(value=str(minute))
+    
+        spinboxes = [
+            tk.Spinbox(time_frame, from_=2000, to=2100, textvariable=dl_year, width=5),
+            tk.Spinbox(time_frame, from_=1, to=12, textvariable=dl_month, width=5),
+            tk.Spinbox(time_frame, from_=1, to=31, textvariable=dl_day, width=5),
+            tk.Spinbox(time_frame, from_=0, to=23, textvariable=dl_hour, width=5),
+            tk.Spinbox(time_frame, from_=0, to=59, textvariable=dl_minute, width=5)
+        ]
+    
+        for i, spinbox in enumerate(spinboxes):
+            spinbox.grid(row=1, column=i, padx=5)
+    
+        button_frame = ttk.Frame(edit_window)
+        button_frame.pack(pady=10)
+    
+        def save():
+            try:
+                # create new due date
+                new_due_date = services.TimeServices.create_datetime(
+                    int(dl_year.get()),
+                    int(dl_month.get()),
+                    int(dl_day.get()),
+                    int(dl_hour.get()),
+                    int(dl_minute.get())
+                ).isoformat()
+            
+                services.TaskServices.updatetask(task_id, {'due_date': new_due_date})
+            
+                update_treeview()
+                edit_window.destroy()
+            except Exception as e:
+                print(f"Error updating due date: {e}")
+                from tkinter import messagebox
+                messagebox.showerror("Error", f"Failed to update due date: {e}")
+    
+        def cancel():
+            edit_window.destroy()
+    
+        # button
+        save_button = ttk.Button(button_frame, text="Save", command=save)
+        save_button.grid(row=0, column=0, padx=10)
+    
+        cancel_button = ttk.Button(button_frame, text="Cancel", command=cancel)
+        cancel_button.grid(row=0, column=1, padx=10)
 
     # Add
     #-------------------------- Begin -------------------------
@@ -275,6 +390,12 @@ def Home(root, max_width, max_height):
         dl_hour = tk.StringVar()
         dl_minute = tk.StringVar()
 
+        dl_year.set(str(year))
+        dl_month.set(str(month))
+        dl_day.set(str(day))
+        dl_hour.set(str(hour))
+        dl_minute.set(str(minute))
+
         spinboxes = [
         tk.Spinbox(time_frame, from_ = year, to=year + 100, textvariable = dl_year, width=5),
         tk.Spinbox(time_frame, from_ = 1, to = 12, textvariable = dl_month, width=5),
@@ -319,7 +440,7 @@ def Home(root, max_width, max_height):
             services.TaskServices.addtask({
                 'name' : taskname.get(), 
                 'description' : 'test',
-                'due_date' : services.TimeServices.create_datetime(int(dl_year.get()), int(dl_month.get()), int(dl_day.get())).isoformat(),
+                'due_date' : services.TimeServices.create_datetime(int(dl_year.get()), int(dl_month.get()), int(dl_day.get()), int(dl_hour.get()), int(dl_minute.get())).isoformat(),
                 'importance' : option_i.get(),
                 'urgent' : option_u.get(),
                 'parent_id' : parent_id

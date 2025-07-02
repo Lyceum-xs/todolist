@@ -36,19 +36,66 @@ class TimeServices:
         return calendar
 
     @staticmethod
-    def create_datetime(year, month, day):
-        return datetime(year, month, day)
+    def create_datetime(year, month, day, hour, minute):
+        return datetime(year, month, day, hour, minute)
 
 
 class TaskServices:
     @staticmethod
-    def gettasks():
+    def gettasks(sort):
         url = f'{BASE_URL}/tasks'
 
         try:
-            response = requests.get(url)
+            response = requests.get(url, {'sort_by' : 'id'})
             if response.status_code == 200:
-                return response.json()
+                tasks = response.json()
+
+                # Create mapping from task ID to task object
+                task_map = {task['id']: task for task in tasks}
+                
+                # Build parent-child relationship structure
+                children_map = {}
+                for task in tasks:
+                    parent_id = task['parent_id']
+                    if parent_id not in children_map:
+                        children_map[parent_id] = []
+                    children_map[parent_id].append(task)
+                
+                # Define sorting key function
+                def get_sort_key(task):
+                    if sort == 'Urgency':
+                        # True comes before False
+                        return (0 if task['urgent'] else 1, task['id'])
+                    elif sort == 'Importance':
+                        # True comes before False
+                        return (0 if task['importance'] else 1, task['id'])
+                    elif sort == 'Due Date':
+                        # Handle None values (put at end)
+                        due_date = task['due_date'] or '9999-12-31'
+                        return (due_date, task['id'])
+                    else:  # Default case
+                        return task['id']
+                
+                # Collect sorted tasks (ensuring parents come before children)
+                sorted_tasks = []
+                
+                def collect_sorted(parent_id):
+                    # Get children for current parent
+                    children = children_map.get(parent_id, [])
+                    
+                    # Sort siblings by the specified criteria
+                    children.sort(key=get_sort_key)
+                    
+                    for child in children:
+                        # Add parent task first
+                        sorted_tasks.append(child)
+                        # Recursively process children
+                        collect_sorted(child['id'])
+                
+                # Start processing from root tasks (parent_id = None)
+                collect_sorted(None)
+                
+                return sorted_tasks
             else:
                 print(f'get tasks failed: {response.status_code} - {response.text}')
                 return []
@@ -148,9 +195,6 @@ class TaskServices:
             print(f'request failed: {str(e)}')
             return []
 
-    @staticmethod
-    def sort_treetasks(tasks):
-        return sorted(tasks, key = lambda x : x['id'])
 
 
 
