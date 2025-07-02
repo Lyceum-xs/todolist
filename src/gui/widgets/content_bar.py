@@ -1,9 +1,9 @@
 from tkinter import *
 from tkinter import ttk
 from ..views.home import Home
-from ..views.settings import Settings
-from ..views.timer import Timer
 from ..views.habitclockin import Habitclockin
+from ..views.timer import Timer
+from ..views.calendar import Calendar
 
 # Content Bar
 #-------------------------------- begin -------------------------------
@@ -28,10 +28,10 @@ def ContentBar(root, max_width, max_height):
 def Choose_content(name, root, max_width, max_height):
     if name == 'Home':
         Home(root, max_width, max_height)
-    elif name == 'Settings':
-        Settings(root, max_width, max_height)
-    elif name == 'Timer':
-        Timer(root, max_width, max_height)
     elif name == 'Habitclockin':
         Habitclockin(root, max_width, max_height)
+    elif name == 'Timer':
+        Timer(root, max_width, max_height)
+    elif name == 'Calendar':
+        Calendar(root, max_width, max_height)
 #--------------------------------- End --------------------------------

@@ -41,17 +41,17 @@ def NavigationBar(root, max_width, max_height):
     home_button.grid(row = 1, column = 0, sticky='ew', pady = (0, 5))
     home_button.bind('<Button-1>', lambda e: Choose_content('Home', con_bar, max_width - w, max_height - 20))
     
-    settings_button = ttk.Button(nb, text = 'Settings', style = 'Nav.TButton')
+    settings_button = ttk.Button(nb, text = 'Habitclockin', style = 'Nav.TButton')
     settings_button.grid(row = 2, column = 0, sticky='ew', pady = (0, 5))
-    settings_button.bind('<Button-1>', lambda e: Choose_content('Settings', con_bar, max_width - w, max_height - 20))
+    settings_button.bind('<Button-1>', lambda e: Choose_content('Habitclockin', con_bar, max_width - w, max_height - 20))
     
     timer_button = ttk.Button(nb, text = 'Timer', style = 'Nav.TButton')
     timer_button.grid(row = 3, column = 0, sticky='ew', pady = (0, 5))
     timer_button.bind('<Button-1>', lambda e: Choose_content('Timer', con_bar, max_width - w, max_height - 20))
 
-    habitclockin_button = ttk.Button(nb, text = 'Habitclockin', style = 'Nav.TButton')
+    habitclockin_button = ttk.Button(nb, text = 'Calendar', style = 'Nav.TButton')
     habitclockin_button.grid(row = 4, column = 0, sticky = 'ew', pady = (0, 5))
-    habitclockin_button.bind('<Button-1>', lambda e: Choose_content('Habitclockin', con_bar, max_width - w, max_height - 20))
+    habitclockin_button.bind('<Button-1>', lambda e: Choose_content('Calendar', con_bar, max_width - w, max_height - 20))
 
     # set default content bar
     Home(con_bar, max_width - w, max_height - 20)
