@@ -11,17 +11,16 @@ def Calendar(root, max_width, max_height):
     print('This is Calendar now')
 
     style = ttk.Style()
-    style.configure('Hab.TButton', 
+    style.configure('Cal.TButton', 
                    background='#FFFFFF',
                    foreground='#000000',
                    font = ('consolas', 10),
                    borderwidth=0,
                    padding=0,
                    relief='flat')
-    style.configure('Hab.TLabel', font = ('consolas', 10))
+    style.configure('Cal.TLabel', font = ('consolas', 10))
 
     root.columnconfigure(0, weight = 1)
-    root.rowconfigure(1, weight = 1)
 
     # calendar frame
     #----------------------- begin -----------------------
@@ -47,7 +46,7 @@ def Calendar(root, max_width, max_height):
     def draw_clockin():
         clear_clockin()
         
-        date_label = ttk.Label(clockin_frame, text = f'{target_date['year']}-{target_date['month']}-{target_date['day']}', style = 'Hab.TLabel')
+        date_label = ttk.Label(clockin_frame, text = f'{target_date['year']}-{target_date['month']}-{target_date['day']}', style = 'Cal.TLabel')
         date_label.grid(row = 0, column = 0, sticky = 'w', padx = (10, 0))
         
         if target_date['year'] == nowtime['year'] and target_date['month'] == nowtime['month'] and target_date['day'] == nowtime['day']:
@@ -64,7 +63,7 @@ def Calendar(root, max_width, max_height):
                 value = clockin_content.get()
                 print(f'{value} is clockined')
 
-            clockin_button = ttk.Button(clockin_frame, text = 'clockin', style = 'Hab.TButton', command = clo)
+            clockin_button = ttk.Button(clockin_frame, text = 'clockin', style = 'Cal.TButton', command = clo)
             clockin_button.grid(row = 2, column = 1)
         
         elif (target_date['year'] < nowtime['year']) or (target_date['year'] == nowtime['year'] and target_date['month'] < nowtime['month']) or (target_date['year'] == nowtime['year'] and target_date['month'] == nowtime['month'] and target_date['day'] < nowtime['day']):
@@ -96,7 +95,7 @@ def Calendar(root, max_width, max_height):
                 target_date['day'] = target_day
 
                 draw_clockin()
-            day_button = ttk.Button(calendar_frame, text = day, style = 'Hab.TButton', width = 5, command = lambda d = day: game(d))
+            day_button = ttk.Button(calendar_frame, text = day, style = 'Cal.TButton', width = 5, command = lambda d = day: game(d))
             day_button.grid(row = r, column = c, padx = 10, pady = 20)
 
     def update_calendar():
@@ -131,24 +130,24 @@ def Calendar(root, max_width, max_height):
             target_year += 1
         update_calendar()
 
-    yl_button = ttk.Button(calendar_frame, text = '<', style = 'Hab.TButton',width = 3, command = yl_game)
-    yr_button = ttk.Button(calendar_frame, text = '>', style = 'Hab.TButton',width = 3, command = yr_game)
-    ml_button = ttk.Button(calendar_frame, text = '<', style = 'Hab.TButton',width = 3, command = ml_game)
-    mr_button = ttk.Button(calendar_frame, text = '>', style = 'Hab.TButton',width = 3, command = mr_game)
+    yl_button = ttk.Button(calendar_frame, text = '<', style = 'Cal.TButton',width = 3, command = yl_game)
+    yr_button = ttk.Button(calendar_frame, text = '>', style = 'Cal.TButton',width = 3, command = yr_game)
+    ml_button = ttk.Button(calendar_frame, text = '<', style = 'Cal.TButton',width = 3, command = ml_game)
+    mr_button = ttk.Button(calendar_frame, text = '>', style = 'Cal.TButton',width = 3, command = mr_game)
 
     yl_button.grid(row = 0, column = 0)
     yr_button.grid(row = 0, column = 2)
     ml_button.grid(row = 0, column = 3)
     mr_button.grid(row = 0, column = 5)
 
-    year_label = ttk.Label(calendar_frame, text = f'{target_year} year', style = 'Hab.TLabel')
-    month_label = ttk.Label(calendar_frame, text = f'{target_month} month', style = 'Hab.TLabel')
+    year_label = ttk.Label(calendar_frame, text = f'{target_year} year', style = 'Cal.TLabel')
+    month_label = ttk.Label(calendar_frame, text = f'{target_month} month', style = 'Cal.TLabel')
     year_label.grid(row = 0, column = 1)
     month_label.grid(row = 0, column = 4)
 
     week_labels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
     for i, week in enumerate(week_labels):
-        week_label = ttk.Label(calendar_frame, text = week, style = 'Hab.TLabel')
+        week_label = ttk.Label(calendar_frame, text = week, style = 'Cal.TLabel')
         week_label.grid(row = 1, column = i, padx = 30)
 
     calendar = services.TimeServices.getcalendar(target_year, target_month)
@@ -166,7 +165,7 @@ def Calendar(root, max_width, max_height):
         update_calendar()
         draw_clockin()
 
-    back_to_today_button = ttk.Button(calendar_frame, text = 'back', style = 'Hab.TButton', command = back_to_today)
+    back_to_today_button = ttk.Button(calendar_frame, text = 'back', style = 'Cal.TButton', command = back_to_today)
     back_to_today_button.grid(row = 0, column = 6)
 
     draw_clockin()

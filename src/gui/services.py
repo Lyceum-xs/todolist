@@ -195,6 +195,19 @@ class TaskServices:
             print(f'request failed: {str(e)}')
             return []
 
+class HabitServices:
+    @staticmethod
+    def create_habit():
+        pass
+
+    @staticmethod
+    def clockin_habit():
+        pass
+    
+    @staticmethod
+    def delete_habit():
+        pass
+
 
 
 
