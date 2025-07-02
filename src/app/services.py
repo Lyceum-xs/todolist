@@ -148,3 +148,10 @@ class HabitService:
             current_date -= timedelta(days=1)
 
         return streak
+    
+    @staticmethod
+    def delete_habit(db: Session, habit_id: int):
+        """删除习惯"""
+        # 调用crud层来执行数据库删除操作
+        if not crud.delete_habit(db, habit_id):
+            raise ValueError("习惯不存在")

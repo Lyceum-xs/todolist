@@ -65,3 +65,14 @@ def get_habit_streak(habit_id: int, db: Session = Depends(get_db)):
         return services.HabitService.get_habit_streak(db, habit_id)
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+
+@router.delete("/{habit_id:int}", status_code=status.HTTP_204_NO_CONTENT, summary="删除习惯")
+def delete_habit(habit_id: int, db: Session = Depends(get_db)):
+    """
+    根据ID删除一个指定的习惯。
+    """
+    try:
+        services.HabitService.delete_habit(db, habit_id)
+    except ValueError as e:
+        # 如果 service 抛出 ValueError (表示习惯不存在)，则返回 404
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
