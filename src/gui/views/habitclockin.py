@@ -32,7 +32,7 @@ def Habitclockin(root, max_width, max_height):
 
     clockin_frame.columnconfigure(0, weight = 1)
 
-    nowtime = services.gettime()
+    nowtime = services.TimeServices.gettime()
     target_year = nowtime['year']
     target_month = nowtime['month']
 
@@ -105,7 +105,7 @@ def Habitclockin(root, max_width, max_height):
         year_label.config(text = f'{target_year} year')
         month_label.config(text = f'{target_month} month')
 
-        calendar = services.getcalendar(target_year, target_month)
+        calendar = services.TimeServices.getcalendar(target_year, target_month)
         draw_calendar(calendar)
 
     def yl_game():
@@ -151,7 +151,7 @@ def Habitclockin(root, max_width, max_height):
         week_label = ttk.Label(calendar_frame, text = week, style = 'Hab.TLabel')
         week_label.grid(row = 1, column = i, padx = 30)
 
-    calendar = services.getcalendar(target_year, target_month)
+    calendar = services.TimeServices.getcalendar(target_year, target_month)
     draw_calendar(calendar)
 
     def back_to_today():
