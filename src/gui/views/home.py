@@ -118,7 +118,7 @@ def Home(root, max_width, max_height):
             tree_view.column(col, **settings)
 
     
-    tasks = services.gettasks()
+    tasks = services.TaskServices.gettasks()
     if not tasks:
         print('No task')
     else:
@@ -127,18 +127,18 @@ def Home(root, max_width, max_height):
     def update_treeview():
         tree_view.delete(*tree_view.get_children())
 
-        tasks = services.gettasks()
+        tasks = services.TaskServices.sort_treetasks(services.TaskServices.gettasks())
 
         task_id_to_tree_id = {}
 
         parent = ''
         for task in tasks:
-            if task.parent_id is None:
+            if task['parent_id'] is None:
                 parent = ''
             else:
-                parent = task_id_to_tree_id[task.parent_id]
-            tree_id = tree_view.insert(parent, 'end', text = task.name, values = (task.due_date, task.urgent, task.importance, task.completed), tags = (task.id,))
-            task_id_to_tree_id.update({task.id : tree_id})
+                parent = task_id_to_tree_id[task['parent_id']]
+            tree_id = tree_view.insert(parent, 'end', text = task['name'], values = (task['due_date'], task['urgent'], task['importance'], task['completed']), tags = (task['id'],))
+            task_id_to_tree_id.update({task['id'] : tree_id})
 
     update_treeview()
 
@@ -193,29 +193,26 @@ def Home(root, max_width, max_height):
         tags = tree_view.item(item_id, 'tags')
         if tags:
             task_id = tags[0]
-            services.deltask(task_id)
+            services.TaskServices.deltask(task_id)
             update_treeview()
 
     def done_item(item):
         tags = tree_view.item(item, 'tags')
-        services.updatetask(tags[0], {'completed' : True})
-        '''
-        task = services.gettask(tags[0])
-        if task.parent_id is not None:
-            parent_task = services.gettask(task.parent_id)
-            children = services.getchildren(task.parent_id)
-
-            print(parent_task)
-            print(children)
+        services.TaskServices.updatetask(tags[0], {'completed' : True})
+        
+        task = services.TaskServices.gettask(tags[0])
+        if task['parent_id'] is not None:
+            parent_task = services.TaskServices.gettask(task['parent_id'])
+            children = services.TaskServices.getchildren(task['parent_id'])
 
             all_done = True
             for child in children:
-                if not child.completed:
+                if not child['completed']:
                     all_done = False
 
             if all_done:
-                services.updatetask(task.parent_id, {'completed' : True})
-        '''
+                services.TaskServices.updatetask(task['parent_id'], {'completed' : True})
+        
         update_treeview()
 
     def newchild_item(item):
@@ -265,7 +262,7 @@ def Home(root, max_width, max_height):
         for i, label in enumerate(labels):
             label.grid(row=1, column=i, sticky='ew', padx = (20, 0))
 
-        time = services.gettime()
+        time = services.TimeServices.gettime()
         year = time['year']
         month = time['month']
         day = time['day']
@@ -319,10 +316,10 @@ def Home(root, max_width, max_height):
             close()
 
         def submit():
-            services.addtask({
+            services.TaskServices.addtask({
                 'name' : taskname.get(), 
                 'description' : 'test',
-                'due_date' : services.create_datetime(int(dl_year.get()), int(dl_month.get()), int(dl_day.get())),
+                'due_date' : services.TimeServices.create_datetime(int(dl_year.get()), int(dl_month.get()), int(dl_day.get())).isoformat(),
                 'importance' : option_i.get(),
                 'urgent' : option_u.get(),
                 'parent_id' : parent_id
