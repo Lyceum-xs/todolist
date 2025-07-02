@@ -45,8 +45,6 @@ class TaskService:
 
         return [schemas.TaskOut.model_validate(task) for task in tasks_from_db]
         
-        return [schemas.TaskOut.model_validate(task) for task in tasks_from_db]
-
     @staticmethod
     def update_task(db: Session, task_id: int, update_data: dict) -> schemas.TaskOut:
         """更新任务"""
@@ -104,13 +102,6 @@ class HabitService:
         """获取所有习惯"""
         habits = crud.get_all_habits(db)
         return [schemas.HabitOut.model_validate(habit) for habit in habits]
-
-
-    @staticmethod
-    def delete_habit(db: Session, habit_id: int):
-        """删除习惯"""
-        if not crud.delete_habit:
-            raise ValueError("习惯不存在")
 
     @staticmethod
     def create_habit_log(db: Session, habit_id: int, log_data: dict) -> schemas.HabitLogOut:

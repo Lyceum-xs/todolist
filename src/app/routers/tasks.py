@@ -16,10 +16,11 @@ def create_task(data: schemas.TaskCreate, db: Session = Depends(get_db)):
 
 @router.get("", response_model=list[schemas.TaskOut], summary="任务列表")
 def list_tasks(
-    status: Literal["completed", "pending", "all"] | None = Query(None, description="completed | pending | all"),
+    status: Literal["completed", "pending", "all"] | None = Query(None, description="任务状态:completed | pending | all"),
+    sort_by: Literal["priority", "id"] = Query("priority", description="排序方式:priority (优先级) | id (创建顺序)"),
     db: Session = Depends(get_db),
 ):
-    return services.TaskService.get_all_tasks(db, status)
+    return services.TaskService.get_all_tasks(db, status, sort_by)
 
 @router.get("/{task_id:int}", response_model=schemas.TaskOut, summary="获取任务")
 def get_task(task_id: int, db: Session = Depends(get_db)):

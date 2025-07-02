@@ -42,13 +42,6 @@ def create_habit_log(habit_id: int, body: schemas.HabitLogCreate, db: Session = 
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=detail)
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=detail)
 
-@router.delete("/{habit_id:int}", status_code=status.HTTP_204_NO_CONTENT, summary="删除习惯")
-def delete_habit(habit_id: int, db: Session = Depends(get_db)):
-    try:
-        services.HabitService.delete_habit(db, habit_id)
-    except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
-
 @router.get(
     "/{habit_id}/logs",
     response_model=list[schemas.HabitLogOut],
