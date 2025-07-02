@@ -29,12 +29,21 @@ class TaskService:
         return schemas.TaskOut.model_validate(task)
 
     @staticmethod
-    def get_all_tasks(db: Session, status: str | None) -> list[schemas.TaskOut]:
-        """获取任务列表并排序"""
+    def get_all_tasks(db: Session, status: str | None, sort_by: str) -> list[schemas.TaskOut]:
+        """获取任务列表并根据指定方式排序"""
         tasks_from_db = crud.get_tasks_by_status(db, status)
-        # 排序：主要按优先级降序，次要按ID升序，确保顺序稳定
-        tasks_from_db.sort(key=lambda t: t.id)
-        tasks_from_db.sort(key=lambda t: t.priority_parameter, reverse=True)
+
+        if sort_by == "id":
+            # 按 ID 升序排序
+            tasks_from_db.sort(key=lambda t: t.id)
+        else:
+            # 默认按优先级排序 (主要按优先级降序，次要按ID升序)
+            # 1. (次要排序) 先按 ID 升序排序，确保稳定性
+            tasks_from_db.sort(key=lambda t: t.id)
+            # 2. (主要排序) 再按优先级降序排序
+            tasks_from_db.sort(key=lambda t: t.priority_parameter, reverse=True)
+
+        return [schemas.TaskOut.model_validate(task) for task in tasks_from_db]
         
         return [schemas.TaskOut.model_validate(task) for task in tasks_from_db]
 
