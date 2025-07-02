@@ -50,7 +50,7 @@ def delete_task(db: Session, task_id: int) -> bool:
     task = get_task(db, task_id)
     if not task:
         return False
-    
+
     db.delete(task)
     db.commit()
     return True
@@ -74,6 +74,16 @@ def get_habit(db: Session, habit_id: int) -> models.Habit | None:
     return db.query(models.Habit).options(
         sqlalchemy.orm.joinedload(models.Habit.logs)
     ).filter(models.Habit.id == habit_id).first()
+
+def delete_habit(db: Session, habit_id: int) -> bool:
+    """删除一个习惯"""
+    habit = get_habit(db, habit_id)
+    if not habit:
+        return False
+
+    db.delete(habit)
+    db.commit()
+    return True
 
 def get_habit_by_name(db: Session, name: str) -> models.Habit | None:
     """通过名称获取单个习惯"""
@@ -100,3 +110,4 @@ def get_log_by_date(db: Session, habit_id: int, log_date: date) -> models.HabitL
 def get_logs_by_habit_id(db: Session, habit_id: int) -> list[models.HabitLog]:
     """获取一个习惯的所有打卡记录"""
     return db.query(models.HabitLog).filter_by(habit_id=habit_id).order_by(models.HabitLog.date.desc()).all()
+
