@@ -50,7 +50,7 @@ class HabitCreate(HabitBase):
     model_config = ConfigDict(title= "习惯创建")
 
 class HabitUpdate(HabitBase):
-    name: str | None = Field(None, max_length=255)
+    name: str | None = Field(None, max_length=128)
     description: str | None = None
     completed: bool | None = False
     duration: int | None = None

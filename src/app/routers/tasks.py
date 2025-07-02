@@ -17,7 +17,7 @@ def create_task(data: schemas.TaskCreate, db: Session = Depends(get_db)):
 @router.get("", response_model=list[schemas.TaskOut], summary="任务列表")
 def list_tasks(
     status: Literal["completed", "pending", "all"] | None = Query(None, description="任务状态:completed | pending | all"),
-    sort_by: Literal["priority", "id"] = Query("priority", description="排序方式:priority (优先级) | id (创建顺序)"),
+    sort_by: Literal["priority", "id", "ddl"] = Query("priority", description="排序方式:priority  | id | ddl"),
     db: Session = Depends(get_db),
 ):
     return services.TaskService.get_all_tasks(db, status, sort_by)
@@ -56,11 +56,3 @@ def get_children_tasks(task_id: int, db: Session = Depends(get_db)):
         return services.TaskService.get_subtasks(db, parent_id=task_id)
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
-    
-@router.get("", response_model=list[schemas.TaskOut], summary="任务列表")
-def list_tasks(
-    status: Literal["completed", "pending", "all"] | None = Query(None, description="任务状态:completed | pending | all"),
-    sort_by: Literal["priority", "id"] = Query("priority", description="排序方式:priority (优先级) | id (创建顺序)"),
-    db: Session = Depends(get_db),
-):
-    return services.TaskService.get_all_tasks(db, status, sort_by)

@@ -73,5 +73,4 @@ def delete_habit(habit_id: int, db: Session = Depends(get_db)):
     try:
         services.HabitService.delete_habit(db, habit_id)
     except ValueError as e:
-        # 如果 service 抛出 ValueError (表示习惯不存在)，则返回 404
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))

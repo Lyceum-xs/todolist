@@ -33,18 +33,18 @@ class TaskService:
         """获取任务列表并根据指定方式排序"""
         tasks_from_db = crud.get_tasks_by_status(db, status)
 
+        tasks_from_db.sort(key=lambda t: t.completed) #
+
         if sort_by == "id":
-            # 按 ID 升序排序
-            tasks_from_db.sort(key=lambda t: t.id)
-        else:
-            # 默认按优先级排序 (主要按优先级降序，次要按ID升序)
-            # 1. (次要排序) 先按 ID 升序排序，确保稳定性
-            tasks_from_db.sort(key=lambda t: t.id)
-            # 2. (主要排序) 再按优先级降序排序
+            tasks_from_db.sort(key=lambda t: t.id) # 按ID升序排序
+        elif sort_by == "ddl":
+            # 将 None 值视为最大，使其排在最后（在已完成/未完成的各自组内）
+            tasks_from_db.sort(key=lambda t: t.due_date if t.due_date is not None else datetime.max)
+        else: # 默认按优先级排序
             tasks_from_db.sort(key=lambda t: t.priority_parameter, reverse=True)
 
         return [schemas.TaskOut.model_validate(task) for task in tasks_from_db]
-        
+
     @staticmethod
     def update_task(db: Session, task_id: int, update_data: dict) -> schemas.TaskOut:
         """更新任务"""
