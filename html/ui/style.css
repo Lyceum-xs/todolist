@@ -1,0 +1,156 @@
+/* style.css (V6 - 已修复并增加删除功能) */
+
+/* =================================================================== */
+/* 1. 全局变量与基础样式                                             */
+/* =================================================================== */
+:root {
+    --primary-color: #4A90E2;
+    --background-color: #F7F8FC;
+    --sidebar-bg: #FFFFFF;
+    --card-bg: #FFFFFF;
+    --text-primary: #2c3e50;
+    --text-secondary: #8a94a6;
+    --border-color: #EAECEF;
+    --success-color: #4CAF50;
+    --danger-color: #F44336;
+    --shadow-light: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+body {
+    font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    margin: 0;
+    background-color: var(--background-color);
+    color: var(--text-primary);
+    -webkit-font-smoothing: antialiased;
+    overflow: hidden;
+}
+
+/* =================================================================== */
+/* 2. 主应用布局                                                     */
+/* =================================================================== */
+.app-container { display: flex; height: 100vh; }
+.sidebar { width: 240px; background-color: var(--sidebar-bg); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; padding: 24px; flex-shrink: 0; transition: width 0.3s ease; }
+.sidebar-header { display: flex; align-items: center; gap: 12px; font-size: 18px; font-weight: 700; margin-bottom: 40px; color: var(--primary-color); }
+.nav-links { list-style: none; padding: 0; margin: 0; flex-grow: 1; }
+.nav-links li a, .sidebar-footer a { display: block; padding: 12px 16px; text-decoration: none; color: var(--text-secondary); font-weight: 500; border-radius: 8px; transition: all 0.2s ease-in-out; }
+.nav-links li a:hover, .sidebar-footer a:hover { background-color: var(--background-color); color: var(--text-primary); }
+.nav-links li.active a, .sidebar-footer.active a { background-color: var(--primary-color); color: white; box-shadow: 0 2px 4px rgba(74, 144, 226, 0.3); }
+.sidebar-footer { margin-top: auto; }
+.main-content { flex-grow: 1; padding: 24px 48px; overflow-y: auto; }
+.content-section { display: none; animation: fadeIn 0.5s ease; }
+.content-section.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.tasks-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+.tasks-header h1 { font-size: 28px; margin: 0; }
+.tasks-header p { color: var(--text-secondary); margin: 4px 0 0; }
+
+/* =================================================================== */
+/* 3. 通用组件 (按钮, 标签等)                                         */
+/* =================================================================== */
+.btn { padding: 10px 20px; border: none; border-radius: 8px; font-size: 16px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+.btn-primary { background-color: var(--primary-color); color: white; }
+.btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+.btn-secondary { background-color: #f0f0f0; color: var(--text-primary); }
+.btn-secondary:hover { background-color: #e0e0e0; }
+.btn-danger { background-color: var(--danger-color); color: white; }
+.btn-danger:hover { opacity: 0.9; }
+.btn-icon { background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-secondary); transition: color 0.2s; }
+.btn-icon:hover { color: var(--text-primary); }
+.tag { font-size: 16px; }
+
+/* =================================================================== */
+/* 4. 任务视图                                                       */
+/* =================================================================== */
+.tasks-filter { display: flex; gap: 8px; margin-bottom: 24px; }
+.filter-btn { padding: 8px 16px; background-color: transparent; border: 1px solid var(--border-color); border-radius: 20px; cursor: pointer; font-weight: 500; color: var(--text-secondary); transition: all 0.2s; }
+.filter-btn:hover { background-color: var(--border-color); }
+.filter-btn.active { background-color: var(--primary-color); color: white; border-color: var(--primary-color); }
+.task-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 12px; }
+.task-item { display: flex; align-items: center; gap: 16px; background-color: var(--card-bg); padding: 16px; border-radius: 12px; border: 1px solid var(--border-color); transition: all 0.2s; position: relative; }
+.task-item:hover { box-shadow: var(--shadow-light); transform: translateY(-2px); }
+.task-details { flex-grow: 1; }
+.task-name { margin: 0; font-size: 16px; font-weight: 500; transition: color 0.2s; }
+.task-due-date { font-size: 14px; color: var(--text-secondary); margin-top: 4px; }
+.task-tags { display: flex; gap: 8px; }
+.checkbox-container { display: block; position: relative; cursor: pointer; user-select: none; width: 24px; height: 24px; }
+.checkbox-container input { position: absolute; opacity: 0; cursor: pointer; height: 0; width: 0; }
+.checkmark { position: absolute; top: 0; left: 0; height: 22px; width: 22px; background-color: #eee; border: 1px solid #ccc; border-radius: 50%; transition: all 0.2s; }
+.checkbox-container:hover input ~ .checkmark { background-color: #ccc; }
+.checkbox-container input:checked ~ .checkmark { background-color: var(--success-color); border-color: var(--success-color); }
+.checkmark:after { content: ""; position: absolute; display: none; }
+.checkbox-container input:checked ~ .checkmark:after { display: block; }
+.checkbox-container .checkmark:after { left: 7px; top: 3px; width: 5px; height: 10px; border: solid white; border-width: 0 3px 3px 0; transform: rotate(45deg); }
+.task-item.completed .task-name { text-decoration: line-through; color: var(--text-secondary); }
+
+.task-item .btn-delete {background: none;border: none;color: var(--text-secondary);cursor: pointer;font-size: 18px;padding: 4px;opacity: 0;transition: opacity 0.2s;margin-left: 8px; }
+.task-item:hover .btn-delete { opacity: 1; }
+.task-item .btn-delete:hover { color: var(--danger-color); }
+
+/* =================================================================== */
+/* 5. 习惯视图                                                       */
+/* =================================================================== */
+.habit-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; margin-top: 24px; }
+.habit-card { position: relative; background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 24px; display: flex; flex-direction: column; align-items: center; text-align: center; transition: all 0.2s; }
+.habit-card:hover { box-shadow: var(--shadow-light); transform: translateY(-2px); }
+.habit-icon { font-size: 48px; margin-bottom: 16px; }
+.habit-info h3 { margin: 0 0 8px 0; font-size: 18px; }
+.habit-info p { margin: 0; color: var(--text-secondary); font-size: 14px; min-height: 40px; }
+.habit-streak { margin: 24px 0; font-size: 16px; font-weight: 500; }
+.habit-streak strong { color: var(--primary-color); font-size: 20px; }
+.btn-check-in { width: 100%; padding: 12px; border: none; border-radius: 8px; background-color: var(--primary-color); color: white; font-size: 16px; font-weight: 700; cursor: pointer; transition: background-color 0.2s; }
+.btn-check-in:hover { opacity: 0.9; }
+.btn-check-in.completed { background-color: var(--success-color); cursor: not-allowed; }
+
+.btn-delete-habit { position: absolute; top: 8px; right: 8px; background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 18px; padding: 4px; opacity: 0; transition: opacity 0.2s; }
+.habit-card:hover .btn-delete-habit { opacity: 1; }
+.btn-delete-habit:hover { color: var(--danger-color); }
+
+/* =================================================================== */
+/* 6. 日历视图                                                       */
+/* =================================================================== */
+.calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+.calendar-header h2 { font-size: 24px; margin: 0; }
+.calendar-header button { background: none; border: 1px solid var(--border-color); border-radius: 50%; width: 36px; height: 36px; cursor: pointer; transition: background-color 0.2s; }
+.calendar-header button:hover { background-color: var(--border-color); }
+.calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background-color: var(--border-color); border: 1px solid var(--border-color); }
+.day-name, .day-cell { background-color: white; padding: 8px; text-align: left; }
+.day-name { font-weight: bold; text-align: center; }
+.day-cell { min-height: 120px; position: relative; display: flex; flex-direction: column; }
+.day-cell.other-month .day-number { color: #ccc; }
+.day-number { font-weight: 500; margin-bottom: 4px; }
+.day-number.today { background-color: var(--primary-color); color: white; border-radius: 50%; width: 24px; height: 24px; display: inline-flex; justify-content: center; align-items: center; }
+.calendar-tasks { display: flex; flex-direction: column; gap: 4px; overflow: hidden; }
+.calendar-task-item { background-color: #e9f2fd; color: var(--primary-color); padding: 2px 6px; border-radius: 4px; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* =================================================================== */
+/* 7. 独立番茄钟视图                                                 */
+/* =================================================================== */
+.pomodoro-container { display: flex; flex-direction: column; align-items: center; justify-content: center; height: calc(100vh - 100px); }
+.pomodoro-circle-container { position: relative; width: 300px; height: 300px; margin-bottom: 24px; }
+.pomodoro-svg { transform: rotate(-90deg); width: 100%; height: 100%; }
+.circle-bg { fill: none; stroke: var(--border-color); stroke-width: 8; }
+.circle-progress { fill: none; stroke-width: 8; stroke-linecap: round; transition: stroke-dashoffset 1s linear, stroke 0.5s; stroke-dashoffset: 0; }
+.pomodoro-time-display { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 60px; font-weight: 700; color: var(--text-primary); font-variant-numeric: tabular-nums; }
+.pomodoro-status { font-size: 20px; font-weight: 500; color: var(--text-secondary); margin-bottom: 32px; }
+.pomodoro-controls-main { display: flex; align-items: center; gap: 24px; }
+.btn-pomodoro-main { background-color: var(--primary-color); color: white; border: none; border-radius: 50px; width: 120px; height: 50px; font-size: 18px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+.btn-pomodoro-main:hover { transform: scale(1.05); }
+.pomodoro-controls-main .btn-icon:hover { color: var(--text-primary); }
+.pomodoro-container.work-mode .circle-progress { stroke: var(--danger-color); }
+.pomodoro-container.break-mode .circle-progress { stroke: var(--success-color); }
+
+/* =================================================================== */
+/* 8. 弹窗 (Modal) 样式                                              */
+/* =================================================================== */
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); display: flex; justify-content: center; align-items: center; z-index: 1000; animation: fadeIn 0.3s; }
+.modal-content { background-color: white; padding: 24px; border-radius: 12px; width: 100%; max-width: 500px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); animation: slideIn 0.3s; }
+@keyframes slideIn { from { transform: translateY(-20px); } to { transform: translateY(0); } }
+.modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 16px; margin-bottom: 16px; }
+.modal-header h2 { margin: 0; font-size: 20px; }
+.modal-close-btn { background: none; border: none; font-size: 28px; cursor: pointer; color: var(--text-secondary); }
+.form-group { margin-bottom: 16px; }
+.form-group label { display: block; font-weight: 500; margin-bottom: 8px; }
+.form-group input[type="text"], .form-group input[type="date"], .form-group input[type="number"], .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; box-sizing: border-box; }
+.form-group-inline { display: flex; gap: 24px; align-items: center; }
+.form-group-inline label { display: flex; align-items: center; gap: 8px; font-weight: 500; }
+.modal-footer { display: flex; justify-content: flex-end; gap: 12px; padding-top: 16px; margin-top: 24px; border-top: 1px solid var(--border-color); }

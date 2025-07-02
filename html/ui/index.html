@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>高效生活 - Todolist</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    
+    <link rel="stylesheet" href="style.css">
+
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div class="app-container">
+
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <svg class="logo" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 12L11 14L15 10M20.6179 5.9821C22.4464 7.81061 22.4464 10.7447 20.6179 12.5732L12.5732 20.6179C10.7447 22.4464 7.81061 22.4464 5.9821 20.6179C4.15359 18.7894 4.15359 15.8553 5.9821 14.0268L14.0268 5.9821C15.8553 4.15359 18.7894 4.15359 20.6179 5.9821Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span>高效生活</span>
+            </div>
+            <ul class="nav-links">
+                <li class="active" data-target="tasks-section"><a href="#">任务</a></li>
+                <li data-target="habits-section"><a href="#">习惯</a></li>
+                <li data-target="calendar-section"><a href="#">日历</a></li>
+                <li data-target="pomodoro-section"><a href="#">番茄钟</a></li>
+            </ul>
+            <div class="sidebar-footer">
+                <a href="#" data-target="settings-section">设置</a>
+            </div>
+        </nav>
+
+        <main class="main-content">
+
+            <section id="tasks-section" class="content-section">
+                <div class="tasks-header">
+                    <div>
+                        <h1>我的任务</h1>
+                        <p id="today-date">今天是</p>
+                    </div>
+                    <button class="btn btn-primary create-task-btn">创建任务</button>
+                </div>
+                <div class="tasks-filter">
+                    <button class="filter-btn active" data-filter="all">所有</button>
+                    <button class="filter-btn" data-filter="pending">待办</button>
+                    <button class="filter-btn" data-filter="completed">已完成</button>
+                </div>
+                <ul class="task-list">
+                    </ul>
+            </section>
+
+            <section id="habits-section" class="content-section">
+                <div class="tasks-header">
+                    <h1>我的习惯</h1>
+                    <button class="btn btn-primary create-habit-btn">创建习惯</button>
+                </div>
+                <div class="habit-grid">
+                    </div>
+            </section>
+            
+            <section id="calendar-section" class="content-section">
+                <div class="calendar-header">
+                    <button id="prev-month-btn">&lt;</button>
+                    <h2 id="current-month-year">月份年份</h2>
+                    <button id="next-month-btn">&gt;</button>
+                </div>
+                <div class="calendar-grid">
+                    <div class="day-name">日</div><div class="day-name">一</div><div class="day-name">二</div><div class="day-name">三</div><div class="day-name">四</div><div class="day-name">五</div><div class="day-name">六</div>
+                    </div>
+            </section>
+
+            <section id="pomodoro-section" class="content-section">
+                <div class="pomodoro-container">
+                    <div class="pomodoro-circle-container">
+                        <svg class="pomodoro-svg" viewBox="0 0 100 100">
+                            <circle class="circle-bg" cx="50" cy="50" r="45"></circle>
+                            <circle class="circle-progress" cx="50" cy="50" r="45"></circle>
+                        </svg>
+                        <div class="pomodoro-time-display">25:00</div>
+                    </div>
+                    <div class="pomodoro-status">专注时间</div>
+                    <div class="pomodoro-controls-main">
+                        <button class="btn-icon" id="pomodoro-settings-btn-main" title="设置">⚙️</button>
+                        <button class="btn btn-pomodoro-main" id="pomodoro-btn-main">▶️ 开始</button>
+                        <button class="btn-icon" id="pomodoro-reset-btn-main" title="重置">🔄</button>
+                    </div>
+                </div>
+            </section>
+
+            <section id="settings-section" class="content-section">
+                <div class="tasks-header">
+                    <h1>设置</h1>
+                </div>
+                <p>这里是设置页面。将来可以添加主题切换、通知设置等功能。</p>
+            </section>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://npmcdn.com/flatpickr/dist/l10n/zh.js"></script>
+    
+    <script src="script.js"></script> 
+</body>
+</html>
