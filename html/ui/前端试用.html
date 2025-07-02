@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>仪表盘 - 任务、习惯与日历</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .tab-button.active {
+            border-color: #4f46e5;
+            color: #4f46e5;
+            background-color: #eef2ff;
+        }
+        .modal {
+            transition: opacity 0.3s ease;
+        }
+        .progress-ring-circle {
+            transition: stroke-dashoffset 0.5s linear;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+        .calendar-day {
+            transition: background-color 0.2s ease;
+        }
+        .calendar-day.selected {
+            background-color: #c7d2fe !important;
+            color: #1e3a8a;
+            font-weight: bold;
+        }
+        .subtask-container {
+            transition: max-height 0.3s ease-in-out;
+            max-height: 0;
+            overflow: hidden;
+        }
+        .subtask-container.expanded {
+            max-height: 1000px; /* A large enough value to show all content */
+        }
+        .toggle-icon {
+            transition: transform 0.3s ease;
+        }
+        .toggle-icon.expanded {
+            transform: rotate(90deg);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <div class="container mx-auto max-w-6xl p-4 sm:p-6 lg:p-8">
+        <header class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-900">我的仪表盘</h1>
+            <p class="text-gray-600 mt-2">高效管理你的任务、习惯与日程</p>
+        </header>
+
+        <!-- Tabs -->
+        <div class="mb-6 border-b border-gray-200">
+            <nav class="-mb-px flex space-x-6 overflow-x-auto" aria-label="Tabs">
+                <button id="tab-tasks" class="tab-button active shrink-0 py-4 px-2 border-b-2 font-medium text-lg" onclick="switchTab('tasks')">
+                    任务列表
+                </button>
+                <button id="tab-habits" class="tab-button shrink-0 py-4 px-2 border-b-2 font-medium text-lg text-gray-500 hover:text-gray-700 hover:border-gray-300" onclick="switchTab('habits')">
+                    习惯追踪
+                </button>
+                <button id="tab-pomodoro" class="tab-button shrink-0 py-4 px-2 border-b-2 font-medium text-lg text-gray-500 hover:text-gray-700 hover:border-gray-300" onclick="switchTab('pomodoro')">
+                    番茄钟
+                </button>
+                <button id="tab-calendar" class="tab-button shrink-0 py-4 px-2 border-b-2 font-medium text-lg text-gray-500 hover:text-gray-700 hover:border-gray-300" onclick="switchTab('calendar')">
+                    日历视图
+                </button>
+            </nav>
+        </div>
+
+        <!-- Content Area -->
+        <main id="content-area">
+            <!-- Tasks Tab Content -->
+            <div id="tasks-content">
+                <div class="bg-white p-6 rounded-xl shadow-sm mb-6">
+                    <h2 class="text-xl font-semibold mb-4">创建新任务</h2>
+                    <form id="create-task-form" class="space-y-4">
+                        <input id="task-name" type="text" placeholder="任务名称 (必填)" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" required>
+                        <textarea id="task-desc" placeholder="任务描述 (可选)" rows="2" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"></textarea>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- MODIFICATION: Changed from parent ID to parent name -->
+                            <input id="task-parent-name" type="text" placeholder="父任务名称 (留空则无)" list="task-names-list" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                            <input id="task-due-date" type="datetime-local" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+                        <div class="flex items-center space-x-6">
+                            <label class="flex items-center"><input id="task-important" type="checkbox" class="h-5 w-5 rounded text-indigo-600 focus:ring-indigo-500"> <span class="ml-2">重要</span></label>
+                            <label class="flex items-center"><input id="task-urgent" type="checkbox" class="h-5 w-5 rounded text-indigo-600 focus:ring-indigo-500"> <span class="ml-2">紧急</span></label>
+                        </div>
+                        <button type="submit" class="w-full bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
+                            添加任务
+                        </button>
+                    </form>
+                </div>
+                <div>
+                    <h2 class="text-xl font-semibold mb-4">待办列表</h2>
+                    <div id="task-list" class="space-y-3"></div>
+                </div>
+            </div>
+
+            <!-- Habits Tab Content -->
+            <div id="habits-content" class="hidden">
+                 <div class="bg-white p-6 rounded-xl shadow-sm mb-6">
+                    <h2 class="text-xl font-semibold mb-4">养成新习惯</h2>
+                    <form id="create-habit-form" class="space-y-4">
+                        <input id="habit-name" type="text" placeholder="习惯名称 (如: 每日阅读)" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" required>
+                        <textarea id="habit-desc" placeholder="习惯描述 (可选)" rows="2" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"></textarea>
+                        <button type="submit" class="w-full bg-teal-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 transition-colors">
+                            添加习惯
+                        </button>
+                    </form>
+                </div>
+                <div>
+                    <h2 class="text-xl font-semibold mb-4">我的习惯</h2>
+                    <div id="habit-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+                </div>
+            </div>
+
+            <!-- Pomodoro Tab Content -->
+            <div id="pomodoro-content" class="hidden">
+                <div class="bg-white p-6 rounded-xl shadow-sm flex flex-col items-center">
+                    <div class="flex space-x-2 mb-6">
+                        <button id="pomodoro-mode-pomodoro" class="px-4 py-2 text-sm font-medium rounded-lg" onclick="selectPomodoroMode('pomodoro')">专注</button>
+                        <button id="pomodoro-mode-shortBreak" class="px-4 py-2 text-sm font-medium rounded-lg" onclick="selectPomodoroMode('shortBreak')">短休息</button>
+                        <button id="pomodoro-mode-longBreak" class="px-4 py-2 text-sm font-medium rounded-lg" onclick="selectPomodoroMode('longBreak')">长休息</button>
+                    </div>
+                    <div class="relative w-64 h-64 mb-6">
+                        <svg class="w-full h-full" viewBox="0 0 120 120">
+                            <circle class="text-gray-200" stroke-width="8" stroke="currentColor" fill="transparent" r="56" cx="60" cy="60" />
+                            <circle id="pomodoro-progress" class="progress-ring-circle text-red-500" stroke-width="8" stroke-linecap="round" stroke="currentColor" fill="transparent" r="56" cx="60" cy="60" />
+                        </svg>
+                        <div id="pomodoro-time" class="absolute inset-0 flex items-center justify-center text-5xl font-bold text-gray-800">
+                            25:00
+                        </div>
+                    </div>
+                    <div class="flex space-x-4">
+                        <button id="pomodoro-start-pause" class="w-32 bg-red-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-red-600 transition-colors text-lg" onclick="startPausePomodoro()">
+                            开始
+                        </button>
+                        <button class="w-32 bg-gray-200 text-gray-800 font-bold py-3 px-4 rounded-lg hover:bg-gray-300 transition-colors text-lg" onclick="resetPomodoro()">
+                            重置
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Calendar Tab Content -->
+            <div id="calendar-content" class="hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm">
+                        <div id="calendar-header" class="flex items-center justify-between mb-4">
+                            <button onclick="previousMonth()" class="p-2 rounded-full hover:bg-gray-100">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+                            </button>
+                            <h2 id="calendar-month-year" class="text-xl font-semibold"></h2>
+                            <button onclick="nextMonth()" class="p-2 rounded-full hover:bg-gray-100">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                            </button>
+                        </div>
+                        <div class="grid grid-cols-7 gap-1 text-center font-medium text-gray-500 text-sm mb-2">
+                            <div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div>
+                        </div>
+                        <div id="calendar-grid" class="grid grid-cols-7 gap-1"></div>
+                    </div>
+                    <div id="calendar-details" class="bg-white p-6 rounded-xl shadow-sm">
+                        <h3 id="details-title" class="font-semibold text-lg mb-4">选择一天查看详情</h3>
+                        <div id="details-content">
+                            <p class="text-gray-500">点击左侧日历中的日期。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal for editing tasks -->
+    <div id="edit-task-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center p-4 hidden" onclick="closeEditModal()">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6" onclick="event.stopPropagation()">
+            <h2 class="text-2xl font-bold mb-4">编辑任务</h2>
+            <form id="edit-task-form" class="space-y-4">
+                <input type="hidden" id="edit-task-id">
+                <input id="edit-task-name" type="text" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" required>
+                <textarea id="edit-task-desc" rows="3" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"></textarea>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- MODIFICATION: Changed from parent ID to parent name -->
+                    <input id="edit-task-parent-name" type="text" placeholder="父任务名称 (留空则无)" list="task-names-list" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                    <input id="edit-task-due-date" type="datetime-local" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                <div class="flex items-center space-x-6">
+                    <label class="flex items-center"><input id="edit-task-important" type="checkbox" class="h-5 w-5 rounded text-indigo-600 focus:ring-indigo-500"> <span class="ml-2">重要</span></label>
+                    <label class="flex items-center"><input id="edit-task-urgent" type="checkbox" class="h-5 w-5 rounded text-indigo-600 focus:ring-indigo-500"> <span class="ml-2">紧急</span></label>
+                </div>
+                <div class="flex justify-end space-x-3">
+                    <button type="button" onclick="closeEditModal()" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">取消</button>
+                    <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">保存更改</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- MODIFICATION: Added datalist for task name autocomplete -->
+    <datalist id="task-names-list"></datalist>
+    
+    <audio id="alarm-sound" src="https://assets.mixkit.co/sfx/preview/mixkit-clear-announce-tones-2861.mp3" preload="auto"></audio>
+
+    <script>
+        const API_BASE_URL = 'http://127.0.0.1:8000';
+        let allTasks = [];
+        let allHabits = [];
+        let calendarDate = new Date();
+        let selectedDateElement = null;
+
+        // --- UTILITY FUNCTIONS ---
+        async function apiRequest(endpoint, method = 'GET', body = null) {
+            const headers = { 'Content-Type': 'application/json' };
+            const config = { method, headers };
+            if (body) config.body = JSON.stringify(body);
+            try {
+                const response = await fetch(API_BASE_URL + endpoint, config);
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || `HTTP error! status: ${response.status}`);
+                }
+                return response.status === 204 ? null : response.json();
+            } catch (error) {
+                console.error('API Request Error:', error);
+                alert(`操作失败: ${error.message}`);
+                return null;
+            }
+        }
+
+        function switchTab(tabName) {
+            const tabs = ['tasks', 'habits', 'pomodoro', 'calendar'];
+            tabs.forEach(tab => {
+                document.getElementById(`${tab}-content`).classList.toggle('hidden', tab !== tabName);
+                document.getElementById(`tab-${tab}`).classList.toggle('active', tab === tabName);
+            });
+            if (tabName === 'calendar') {
+                renderCalendar();
+            }
+        }
+
+        // --- TASK RELATED FUNCTIONS ---
+        function updateTaskDatalist() {
+            const datalist = document.getElementById('task-names-list');
+            datalist.innerHTML = '';
+            allTasks.forEach(task => {
+                const option = document.createElement('option');
+                option.value = task.name;
+                datalist.appendChild(option);
+            });
+        }
+
+        function createTaskElement(task, level = 0) {
+            const hasChildren = task.children && task.children.length > 0;
+            const container = document.createElement('div');
+            container.id = `task-container-${task.id}`;
+            
+            const taskEl = document.createElement('div');
+            taskEl.className = `p-4 rounded-lg flex items-center gap-4 transition-all ${task.completed ? 'bg-gray-100 text-gray-500' : 'bg-white shadow-sm hover:shadow-md'}`;
+            if (level > 0) {
+                taskEl.style.marginLeft = `${level * 2}rem`;
+            }
+
+            taskEl.innerHTML = `
+                <div class="flex items-center gap-2 shrink-0">
+                    ${hasChildren ? `<button onclick="toggleSubtasks(${task.id})" class="p-1 rounded-full hover:bg-gray-200"><svg id="toggle-icon-${task.id}" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 toggle-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg></button>` : '<div class="w-6"></div>'}
+                    <input type="checkbox" class="h-6 w-6 rounded-full text-indigo-600 focus:ring-indigo-500 border-gray-300" onchange="toggleTaskComplete(${task.id}, this.checked)" ${task.completed ? 'checked' : ''}>
+                </div>
+                <div class="flex-1 cursor-pointer min-w-0" onclick="openEditModal(${task.id})">
+                    <p class="font-medium truncate ${task.completed ? 'line-through' : ''}">${task.name}</p>
+                    <p class="text-sm text-gray-500 truncate">${task.description || '没有描述'}</p>
+                </div>
+                <button onclick="handleDeleteTask(${task.id})" class="text-gray-400 hover:text-red-500 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
+                </button>
+            `;
+            container.appendChild(taskEl);
+
+            if (hasChildren) {
+                const subtaskContainer = document.createElement('div');
+                subtaskContainer.id = `subtasks-of-${task.id}`;
+                subtaskContainer.className = 'subtask-container space-y-3 mt-2';
+                task.children.forEach(childTask => {
+                    subtaskContainer.appendChild(createTaskElement(childTask, level + 1));
+                });
+                container.appendChild(subtaskContainer);
+            }
+            
+            return container;
+        }
+
+        function renderTasks() {
+            const taskListContainer = document.getElementById('task-list');
+            taskListContainer.innerHTML = '';
+
+            const tasksById = new Map(allTasks.map(task => [task.id, { ...task, children: [] }]));
+            const topLevelTasks = [];
+
+            allTasks.forEach(task => {
+                const taskNode = tasksById.get(task.id);
+                if (task.parent_id && tasksById.has(task.parent_id)) {
+                    tasksById.get(task.parent_id).children.push(taskNode);
+                } else {
+                    topLevelTasks.push(taskNode);
+                }
+            });
+
+            if (topLevelTasks.length > 0) {
+                topLevelTasks.forEach(task => {
+                    taskListContainer.appendChild(createTaskElement(task));
+                });
+            } else {
+                taskListContainer.innerHTML = '<p class="text-center text-gray-500 py-4">太棒了，没有待办任务！</p>';
+            }
+            updateTaskDatalist();
+        }
+
+        function toggleSubtasks(taskId) {
+            const subtasksContainer = document.getElementById(`subtasks-of-${taskId}`);
+            const toggleIcon = document.getElementById(`toggle-icon-${taskId}`);
+            if (subtasksContainer) {
+                subtasksContainer.classList.toggle('expanded');
+                toggleIcon.classList.toggle('expanded');
+            }
+        }
+        
+        document.getElementById('create-task-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const parentName = document.getElementById('task-parent-name').value.trim();
+            let parentId = 0;
+            if (parentName) {
+                const parentTask = allTasks.find(t => t.name === parentName);
+                if (parentTask) {
+                    parentId = parentTask.id;
+                } else {
+                    alert(`错误：找不到名为 "${parentName}" 的父任务。`);
+                    return;
+                }
+            }
+
+            const taskData = {
+                name: document.getElementById('task-name').value,
+                description: document.getElementById('task-desc').value,
+                parent_id: parentId,
+                due_date: document.getElementById('task-due-date').value || null,
+                importance: document.getElementById('task-important').checked,
+                urgent: document.getElementById('task-urgent').checked,
+            };
+            const result = await apiRequest('/tasks', 'POST', taskData);
+            if (result) {
+                allTasks.push(result);
+                renderTasks();
+                renderCalendar();
+                e.target.reset();
+            }
+        });
+        
+        async function toggleTaskComplete(taskId, isCompleted) {
+            const result = await apiRequest(`/tasks/${taskId}`, 'PATCH', { completed: isCompleted });
+            if (result) {
+                const taskIndex = allTasks.findIndex(t => t.id === taskId);
+                if (taskIndex !== -1) allTasks[taskIndex] = result;
+                renderTasks();
+            }
+        }
+
+        async function handleDeleteTask(taskId) {
+            if (confirm('确定要删除这个任务吗？这也会删除其所有子任务。')) {
+                const result = await apiRequest(`/tasks/${taskId}`, 'DELETE');
+                if (result === null) {
+                    const tasks = await apiRequest('/tasks');
+                    allTasks = tasks || [];
+                    renderTasks();
+                    renderCalendar();
+                }
+            }
+        }
+
+        async function openEditModal(taskId) {
+            const task = allTasks.find(t => t.id === taskId);
+            if (!task) return;
+            document.getElementById('edit-task-id').value = task.id;
+            document.getElementById('edit-task-name').value = task.name;
+            document.getElementById('edit-task-desc').value = task.description || '';
+
+            const parentTask = allTasks.find(t => t.id === task.parent_id);
+            document.getElementById('edit-task-parent-name').value = parentTask ? parentTask.name : '';
+            
+            document.getElementById('edit-task-due-date').value = task.due_date ? task.due_date.slice(0, 16) : '';
+            document.getElementById('edit-task-important').checked = task.importance;
+            document.getElementById('edit-task-urgent').checked = task.urgent;
+            document.getElementById('edit-task-modal').classList.remove('hidden');
+        }
+
+        function closeEditModal() {
+            document.getElementById('edit-task-modal').classList.add('hidden');
+        }
+
+        document.getElementById('edit-task-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const taskId = parseInt(document.getElementById('edit-task-id').value);
+            
+            const parentName = document.getElementById('edit-task-parent-name').value.trim();
+            let parentId = 0;
+            if (parentName) {
+                const parentTask = allTasks.find(t => t.name === parentName);
+                if (parentTask) {
+                    if (parentTask.id === taskId) {
+                        alert('错误：不能将任务设置为自己的父任务。');
+                        return;
+                    }
+                    parentId = parentTask.id;
+                } else {
+                    alert(`错误：找不到名为 "${parentName}" 的父任务。`);
+                    return;
+                }
+            }
+
+            const taskData = {
+                name: document.getElementById('edit-task-name').value,
+                description: document.getElementById('edit-task-desc').value,
+                parent_id: parentId,
+                due_date: document.getElementById('edit-task-due-date').value || null,
+                importance: document.getElementById('edit-task-important').checked,
+                urgent: document.getElementById('edit-task-urgent').checked,
+            };
+
+            const result = await apiRequest(`/tasks/${taskId}`, 'PATCH', taskData);
+            if (result) {
+                const taskIndex = allTasks.findIndex(t => t.id === taskId);
+                if (taskIndex !== -1) allTasks[taskIndex] = result;
+                closeEditModal();
+                renderTasks();
+                renderCalendar();
+            }
+        });
+
+        // --- HABIT RELATED FUNCTIONS ---
+        async function renderHabits() {
+            const habitList = document.getElementById('habit-list');
+            habitList.innerHTML = '';
+            if (allHabits && allHabits.length > 0) {
+                for (const habit of allHabits) {
+                    const streak = await apiRequest(`/habits/${habit.id}/streak`);
+                    const habitEl = document.createElement('div');
+                    habitEl.className = 'bg-white p-5 rounded-xl shadow-sm flex flex-col justify-between';
+                    const today = new Date().toISOString().split('T')[0];
+                    const hasLoggedToday = habit.logs.some(log => log.date.startsWith(today));
+                    habitEl.innerHTML = `
+                        <div>
+                            <h3 class="font-bold text-lg text-gray-800">${habit.name}</h3>
+                            <p class="text-sm text-gray-500 mt-1 h-10">${habit.description || ''}</p>
+                        </div>
+                        <div class="flex items-center justify-between mt-4">
+                            <div class="text-center">
+                                <p class="text-3xl font-bold text-teal-600">${streak}</p>
+                                <p class="text-xs text-gray-500">连续打卡</p>
+                            </div>
+                            <button onclick="logHabit(${habit.id}, this)" class="px-5 py-2 rounded-lg font-semibold text-white ${hasLoggedToday ? 'bg-gray-400 cursor-not-allowed' : 'bg-teal-500 hover:bg-teal-600'}" ${hasLoggedToday ? 'disabled' : ''}>
+                                ${hasLoggedToday ? '已打卡' : '打卡'}
+                            </button>
+                        </div>
+                    `;
+                    habitList.appendChild(habitEl);
+                }
+            } else {
+                habitList.innerHTML = '<p class="text-center text-gray-500 py-4 col-span-full">还没有添加任何习惯，快来养成一个吧！</p>';
+            }
+        }
+
+        document.getElementById('create-habit-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const habitData = {
+                name: document.getElementById('habit-name').value,
+                description: document.getElementById('habit-desc').value,
+            };
+            const result = await apiRequest('/habits', 'POST', habitData);
+            if (result) {
+                allHabits.push(result);
+                renderHabits();
+                renderCalendar();
+                e.target.reset();
+            }
+        });
+
+        async function logHabit(habitId, button) {
+            button.disabled = true;
+            const result = await apiRequest(`/habits/${habitId}/logs`, 'POST', { date: new Date().toISOString() });
+            if (result) {
+                const habitIndex = allHabits.findIndex(h => h.id === habitId);
+                if (habitIndex !== -1) {
+                    if (!allHabits[habitIndex].logs) allHabits[habitIndex].logs = [];
+                    allHabits[habitIndex].logs.push(result);
+                }
+                renderHabits();
+                renderCalendar();
+            } else {
+                button.disabled = false;
+            }
+        }
+
+        // --- POMODORO TIMER FUNCTIONS ---
+        const pomodoro = { timerId: null, state: 'stopped', mode: 'pomodoro', totalSeconds: 1500, secondsLeft: 1500, pomodoroCount: 0, modes: { pomodoro: { time: 1500, color: 'text-red-500' }, shortBreak: { time: 300, color: 'text-green-500' }, longBreak: { time: 900, color: 'text-blue-500' } } };
+        const timeDisplay = document.getElementById('pomodoro-time');
+        const progressRing = document.getElementById('pomodoro-progress');
+        const startPauseBtn = document.getElementById('pomodoro-start-pause');
+        const alarmSound = document.getElementById('alarm-sound');
+        const radius = progressRing.r.baseVal.value;
+        const circumference = 2 * Math.PI * radius;
+        progressRing.style.strokeDasharray = `${circumference} ${circumference}`;
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(pomodoro.secondsLeft / 60);
+            const seconds = pomodoro.secondsLeft % 60;
+            const display = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            timeDisplay.textContent = display;
+            document.title = `${display} - ${pomodoro.mode === 'pomodoro' ? '专注中' : '休息中'}`;
+        }
+
+        function updateProgressRing() {
+            const offset = circumference - (pomodoro.secondsLeft / pomodoro.totalSeconds) * circumference;
+            progressRing.style.strokeDashoffset = offset;
+        }
+
+        function timerTick() {
+            pomodoro.secondsLeft--;
+            updateTimerDisplay();
+            updateProgressRing();
+            if (pomodoro.secondsLeft < 0) {
+                clearInterval(pomodoro.timerId);
+                alarmSound.play();
+                if (pomodoro.mode === 'pomodoro') {
+                    pomodoro.pomodoroCount++;
+                    selectPomodoroMode(pomodoro.pomodoroCount % 4 === 0 ? 'longBreak' : 'shortBreak');
+                } else {
+                    selectPomodoroMode('pomodoro');
+                }
+                startPausePomodoro();
+            }
+        }
+
+        function startPausePomodoro() {
+            if (pomodoro.state === 'running') {
+                clearInterval(pomodoro.timerId);
+                pomodoro.state = 'paused';
+                startPauseBtn.textContent = '继续';
+            } else {
+                pomodoro.state = 'running';
+                startPauseBtn.textContent = '暂停';
+                pomodoro.timerId = setInterval(timerTick, 1000);
+            }
+        }
+
+        function resetPomodoro() {
+            clearInterval(pomodoro.timerId);
+            pomodoro.state = 'stopped';
+            pomodoro.secondsLeft = pomodoro.totalSeconds;
+            updateTimerDisplay();
+            updateProgressRing();
+            startPauseBtn.textContent = '开始';
+            document.title = '仪表盘';
+        }
+
+        function selectPomodoroMode(mode) {
+            pomodoro.mode = mode;
+            const modeSettings = pomodoro.modes[mode];
+            pomodoro.totalSeconds = modeSettings.time;
+            progressRing.setAttribute('class', `progress-ring-circle ${modeSettings.color}`);
+            const colors = { pomodoro: 'bg-red-500 hover:bg-red-600', shortBreak: 'bg-green-500 hover:bg-green-600', longBreak: 'bg-blue-500 hover:bg-blue-600' };
+            startPauseBtn.className = `w-32 text-white font-bold py-3 px-4 rounded-lg transition-colors text-lg ${colors[mode]}`;
+            Object.keys(pomodoro.modes).forEach(m => {
+                const btn = document.getElementById(`pomodoro-mode-${m}`);
+                const activeColors = { pomodoro: 'bg-red-500', shortBreak: 'bg-green-500', longBreak: 'bg-blue-500' };
+                btn.classList.toggle('bg-gray-200', m !== mode);
+                btn.classList.toggle('text-white', m === mode);
+                if (m === mode) btn.classList.add(activeColors[m]);
+                else Object.values(activeColors).forEach(c => btn.classList.remove(c));
+            });
+            resetPomodoro();
+        }
+
+        // --- CALENDAR FUNCTIONS ---
+        function renderCalendar() {
+            const year = calendarDate.getFullYear();
+            const month = calendarDate.getMonth();
+            document.getElementById('calendar-month-year').textContent = `${year}年 ${month + 1}月`;
+            const grid = document.getElementById('calendar-grid');
+            grid.innerHTML = '';
+            const firstDayOfMonth = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            for (let i = 0; i < firstDayOfMonth; i++) grid.insertAdjacentHTML('beforeend', '<div></div>');
+            for (let day = 1; day <= daysInMonth; day++) {
+                const date = new Date(year, month, day);
+                const dateString = date.toISOString().split('T')[0];
+                const isToday = dateString === new Date().toISOString().split('T')[0];
+                const hasTask = allTasks.some(task => task.due_date && task.due_date.startsWith(dateString));
+                const hasHabitLog = allHabits.some(habit => habit.logs.some(log => log.date.startsWith(dateString)));
+                let dayHtml = `<div id="day-${dateString}" class="calendar-day h-16 p-2 border border-gray-100 rounded-lg cursor-pointer hover:bg-gray-100 ${isToday ? 'bg-indigo-100' : ''}" onclick="showDayDetails('${dateString}', this)">
+                        <div class="text-right text-sm">${day}</div><div class="flex justify-center items-center space-x-1 mt-1">`;
+                if (hasTask) dayHtml += '<div class="w-2 h-2 bg-blue-500 rounded-full" title="有任务"></div>';
+                if (hasHabitLog) dayHtml += '<div class="w-2 h-2 bg-green-500 rounded-full" title="有打卡"></div>';
+                dayHtml += '</div></div>';
+                grid.insertAdjacentHTML('beforeend', dayHtml);
+            }
+        }
+        
+        function showDayDetails(dateString, element) {
+            if (selectedDateElement) selectedDateElement.classList.remove('selected');
+            if (element) {
+                element.classList.add('selected');
+                selectedDateElement = element;
+            }
+            const detailsTitle = document.getElementById('details-title');
+            const detailsContent = document.getElementById('details-content');
+            const date = new Date(dateString);
+            detailsTitle.textContent = `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
+            let html = '';
+            const tasksForDay = allTasks.filter(task => task.due_date && task.due_date.startsWith(dateString));
+            html += '<h5 class="font-semibold text-sm mb-2 text-blue-600">到期任务</h5>';
+            if (tasksForDay.length > 0) {
+                html += '<ul class="list-disc list-inside space-y-1 text-gray-700 text-sm">';
+                tasksForDay.forEach(task => { html += `<li>${task.name}</li>`; });
+                html += '</ul>';
+            } else {
+                html += '<p class="text-sm text-gray-500">没有任务。</p>';
+            }
+            const habitsLoggedToday = allHabits.filter(habit => habit.logs.some(log => log.date.startsWith(dateString)));
+            html += '<h5 class="font-semibold text-sm mt-4 mb-2 text-green-600">完成的习惯</h5>';
+            if (habitsLoggedToday.length > 0) {
+                html += '<ul class="list-disc list-inside space-y-1 text-gray-700 text-sm">';
+                habitsLoggedToday.forEach(habit => { html += `<li>${habit.name}</li>`; });
+                html += '</ul>';
+            } else {
+                html += '<p class="text-sm text-gray-500">没有打卡记录。</p>';
+            }
+            detailsContent.innerHTML = html;
+        }
+
+        function previousMonth() {
+            calendarDate.setMonth(calendarDate.getMonth() - 1);
+            renderCalendar();
+        }
+
+        function nextMonth() {
+            calendarDate.setMonth(calendarDate.getMonth() + 1);
+            renderCalendar();
+        }
+
+        // --- INITIAL LOAD ---
+        async function initializeApp() {
+            const tasksPromise = apiRequest('/tasks');
+            const habitsPromise = apiRequest('/habits');
+            const [tasks, habits] = await Promise.all([tasksPromise, habitsPromise]);
+            allTasks = tasks || [];
+            allHabits = habits || [];
+            renderTasks();
+            renderHabits();
+            renderCalendar();
+            showDayDetails(new Date().toISOString().split('T')[0], document.getElementById(`day-${new Date().toISOString().split('T')[0]}`));
+            selectPomodoroMode('pomodoro');
+        }
+
+        document.addEventListener('DOMContentLoaded', initializeApp);
+    </script>
+</body>
+</html>

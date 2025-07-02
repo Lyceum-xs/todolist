@@ -157,7 +157,7 @@ class HabitService:
             current_date -= timedelta(days=1)
 
         return streak
-    
+
     @staticmethod
     def delete_habit(db: Session, habit_id: int):
         """删除习惯"""
