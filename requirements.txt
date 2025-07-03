@@ -7,3 +7,9 @@ python-dateutil==2.8.2
 
 # 应用打包基础（构建分发）
 setuptools==68.0.0
+
+# Web框架 (FastAPI 应用的核心)
+fastapi==0.115.13
+
+# ASGI 服务器 (如果您的 FastAPI 应用通过 Uvicorn 启动)
+uvicorn==0.34.3
