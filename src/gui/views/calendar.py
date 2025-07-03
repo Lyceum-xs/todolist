@@ -10,6 +10,8 @@ def Calendar(root, max_width, max_height):
     clear_frame(root)
     print('This is Calendar now')
 
+    root.rowconfigure(5, weight = 0)
+
     style = ttk.Style()
     style.configure('Cal.TButton', 
                    background='#FFFFFF',
