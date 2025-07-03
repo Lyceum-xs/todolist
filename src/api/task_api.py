@@ -9,7 +9,7 @@ from app.db import SessionLocal
 
 class TaskAPI:
     """任务核心操作API"""
-    
+
     @staticmethod
     def get_task(task_id: int) -> TaskOut:
         """获取单个任务"""
