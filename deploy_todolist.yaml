@@ -1,0 +1,55 @@
+- name: 部署任务管理系统
+  hosts: localhost # 目标主机
+  become: yes      # 需要root权限
+
+  vars:
+    repo_url: http://whucsgitlab.whu.edu.cn/devops/todolist.git
+    base_install_dir: /opt
+    app_base_dir: "{{ base_install_dir }}/todolist"
+    app_full_path: "{{ app_base_dir }}/src/app"
+    app_log_file: "{{ app_full_path }}/app.log"
+    venv_path: "{{ app_full_path }}/venv"
+    production_requirements_file: "{{ app_base_dir }}/requirements.txt"
+    main_app_file: "main"
+  tasks:
+    - name: 确保基础安装目录存在
+      ansible.builtin.file:
+        path: "{{ base_install_dir }}"
+        state: directory
+        mode: '0755'
+        owner: root
+        group: root
+      when: base_install_dir != '/tmp'
+
+    - name: 克隆任务管理系统仓库
+      ansible.builtin.git:
+        repo: "{{ repo_url }}"
+        dest: "{{ app_base_dir }}"
+        version: main
+        force: yes # 谨慎使用，会覆盖目标目录的任何本地更改
+
+    - name: 创建Python虚拟环境
+      ansible.builtin.command:
+        cmd: python3 -m venv "{{ venv_path }}"
+        chdir: "{{ app_full_path }}"
+      args:
+        creates: "{{ venv_path }}/bin/activate"
+
+    - name: 安装Python依赖
+      ansible.builtin.pip:
+        requirements: "{{ production_requirements_file }}"
+        virtualenv: "{{ venv_path }}"
+        extra_args: "-i https://pypi.tuna.tsinghua.edu.cn/simple"
+
+    - name: 停止旧的应用进程 (如果存在)
+      ansible.builtin.shell: |
+        ps aux | grep "{{ main_app_file }}" | grep -v grep | awk '{print $2}' | xargs -r kill -9
+      changed_when: true
+
+    - name: 后台启动应用
+      ansible.builtin.shell: |
+        nohup {{ venv_path }}/bin/python -m src.app.main > "{{ app_log_file }}" 2>&1 &
+      args:
+        chdir: "{{ app_base_dir }}" # 在主应用程序文件所在的目录执行启动命令
+      async: 1 # 异步执行，不等待命令完成
+      poll: 0  # 不轮询结果，立即返回
