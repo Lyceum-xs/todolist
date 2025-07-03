@@ -54,6 +54,11 @@ class TaskServices:
             if response.status_code == 200:
                 tasks = response.json()
 
+                for task in tasks:
+                    if task['due_date']:
+                        if '.' in task['due_date']:
+                            task['due_date'] = task['due_date'].split('.')[0] + 'Z'
+
                 # Create mapping from task ID to task object
                 task_map = {task['id']: task for task in tasks}
                 
