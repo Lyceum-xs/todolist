@@ -23,6 +23,7 @@ def Calendar(root, max_width, max_height):
     style.configure('Cal.TLabel', font = ('consolas', 10))
 
     root.columnconfigure(0, weight = 1)
+    root.rowconfigure(1, weight = 1)
 
     # calendar frame
     #----------------------- begin -----------------------
@@ -32,6 +33,7 @@ def Calendar(root, max_width, max_height):
     clockin_frame.grid(row = 1, column = 0, sticky = 'nsew')
 
     clockin_frame.columnconfigure(0, weight = 1)
+    clockin_frame.rowconfigure(1, weight = 1)
 
     nowtime = services.TimeServices.gettime()
     target_year = nowtime['year']
@@ -39,42 +41,65 @@ def Calendar(root, max_width, max_height):
 
     target_date = {'year' : nowtime['year'], 'month' : nowtime['month'], 'day' : nowtime['day']}
 
-    def clear_clockin():
+    def clear_cavans():
         for widget in clockin_frame.grid_slaves():
             row = widget.grid_info().get('row', -1)
             if row is not None:
                 widget.destroy()
 
-    def draw_clockin():
-        clear_clockin()
+    def draw_cavans():
+        clear_cavans()
         
         date_label = ttk.Label(clockin_frame, text = f'{target_date['year']}-{target_date['month']}-{target_date['day']}', style = 'Cal.TLabel')
         date_label.grid(row = 0, column = 0, sticky = 'w', padx = (10, 0))
         
-        if target_date['year'] == nowtime['year'] and target_date['month'] == nowtime['month'] and target_date['day'] == nowtime['day']:
-            null_label = ttk.Label(clockin_frame)
-            null_label.grid(row = 2, column = 0, sticky = 'ew')
+        canvas = Canvas(clockin_frame, borderwidth = 0, highlightthickness = 0)
+        vsb = ttk.Scrollbar(clockin_frame, orient="vertical", command=canvas.yview)
+        hsb = ttk.Scrollbar(clockin_frame, orient="horizontal", command=canvas.xview)
+        canvas.configure(yscrollcommand=vsb.set, xscrollcommand=hsb.set)
 
-            clockin_content = tk.StringVar()
-            clockin_content.set('Clockin content')
+        canvas.grid(row=1, column=0, sticky="nsew")
+        vsb.grid(row=1, column=1, sticky="ns")
+        hsb.grid(row=2, column=0, sticky="ew")
 
-            clockin_bar = tk.Entry(clockin_frame, textvariable = clockin_content, width = 45, font = ('consolas', 12))
-            clockin_bar.grid(row = 1, column = 0, pady = 15)
+        frame = ttk.Frame(canvas)
+        canvas_frame = canvas.create_window((0, 0), window = frame, anchor="nw")
 
-            def clo():
-                value = clockin_content.get()
-                print(f'{value} is clockined')
+        def configure_scrollregion(event):
+            canvas.configure(scrollregion=canvas.bbox("all"))
+            canvas.itemconfig(canvas_frame, width = event.width)
+    
+        frame.bind("<Configure>", configure_scrollregion)
+        canvas.bind("<Configure>", lambda event: canvas.itemconfig(canvas_frame, width=event.width))
 
-            clockin_button = ttk.Button(clockin_frame, text = 'clockin', style = 'Cal.TButton', command = clo)
-            clockin_button.grid(row = 2, column = 1)
-        
-        elif (target_date['year'] < nowtime['year']) or (target_date['year'] == nowtime['year'] and target_date['month'] < nowtime['month']) or (target_date['year'] == nowtime['year'] and target_date['month'] == nowtime['month'] and target_date['day'] < nowtime['day']):
-            content_label = ttk.Label(clockin_frame, text = 'You didn\'t clockin on this day', style = 'Hab.TLabel')
-            content_label.grid(row = 1, column = 0, pady = 50)
-        
-        elif (target_date['year'] > nowtime['year']) or (target_date['year'] == nowtime['year'] and target_date['month'] > nowtime['month']) or (target_date['year'] == nowtime['year'] and target_date['month'] == nowtime['month'] and target_date['day'] > nowtime['day']):
-            content_label = ttk.Label(clockin_frame, text = 'This day has not arrived', style = 'Hab.TLabel')
-            content_label.grid(row = 1, column = 0, pady = 50)
+        frame.columnconfigure(0, weight = 1)
+        frame.columnconfigure(1, weight = 1)
+
+        ttk.Label(frame, text = 'Overdue tasks', font = ('consolas', 10)).grid(row = 0, column = 0, sticky = 'ew')
+        ttk.Label(frame, text = 'Clockin habits', font = ('consolas', 10)).grid(row = 0, column = 1, sticky = 'ew')
+
+        tasks = services.TaskServices.gettasks('id')
+        r = 1
+        for task in tasks:
+            due_date = services.TimeServices.turn_datetime(task['due_date'])
+
+            if due_date.year == target_date['year'] and due_date.month == target_date['month'] and due_date.day == target_date['day']:
+                ttk.Label(frame, text = task['name'], font = ('consolas', 10)).grid(row = r, column = 0, sticky = 'w')
+
+                r += 1
+
+        habits = services.HabitServices.get_habits()
+        r = 1
+        for habit in habits:
+            logs = habit['logs']
+            print(logs)
+            for log in logs:
+                clockin_date = services.TimeServices.turn_datetime(log['date'])
+                if clockin_date.year == target_date['year'] and clockin_date.month == target_date['month'] and clockin_date.day == target_date['day']:
+                    ttk.Label(frame, text = habit['name'], font = ('consolas', 10)).grid(row = r, column = 1, sticky = 'w')
+            
+                    r += 1
+
 
 
     def clear_calendar():
@@ -96,7 +121,7 @@ def Calendar(root, max_width, max_height):
                 target_date['month'] = target_month
                 target_date['day'] = target_day
 
-                draw_clockin()
+                draw_cavans()
             day_button = ttk.Button(calendar_frame, text = day, style = 'Cal.TButton', width = 5, command = lambda d = day: game(d))
             day_button.grid(row = r, column = c, padx = 10, pady = 20)
 
@@ -165,12 +190,12 @@ def Calendar(root, max_width, max_height):
         target_date['day'] = nowtime['day']
 
         update_calendar()
-        draw_clockin()
+        draw_cavans()
 
     back_to_today_button = ttk.Button(calendar_frame, text = 'back', style = 'Cal.TButton', command = back_to_today)
     back_to_today_button.grid(row = 0, column = 6)
 
-    draw_clockin()
+    draw_cavans()
     #------------------------ End ------------------------
 
 
