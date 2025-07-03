@@ -33,13 +33,6 @@
         recurse: yes
       become: yes
 
-    - name: 克隆任务管理系统仓库
-      ansible.builtin.git:
-        repo: "{{ repo_url }}"
-        dest: "{{ app_base_dir }}"
-        version: main
-        force: yes # 谨慎使用，会覆盖目标目录的任何本地更改
-
     - name: 创建Python虚拟环境
       ansible.builtin.command:
         cmd: python3 -m venv "{{ venv_path }}"
