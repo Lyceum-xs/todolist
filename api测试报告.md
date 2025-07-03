@@ -58,7 +58,7 @@
 ![alt text](./docs/assets/image-task3.png)
 ### 3.2. 习惯 (Habits) 模块测试
 ##### 3.2.1. 测试流程
-![alt text](./docs/assets/image-habit1.png)
+![alt text](./docs/assets/image_habit1.png)
 ##### 3.2.2. 功能测试报告
 [点击查看习惯功能测试文件HTML格式](./docs/assets/habits-apifox-reports.html)
 ##### 3.2.3. 性能测试报告
