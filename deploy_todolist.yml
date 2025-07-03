@@ -30,6 +30,7 @@
         mode: '0755'
         owner: "{{ jenkins_user }}"
         group: "{{ jenkins_group }}"
+        recurse: yes
       become: yes
 
     - name: 克隆任务管理系统仓库
