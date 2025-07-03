@@ -92,7 +92,6 @@ def Calendar(root, max_width, max_height):
         r = 1
         for habit in habits:
             logs = habit['logs']
-            print(logs)
             for log in logs:
                 clockin_date = services.TimeServices.turn_datetime(log['date'])
                 if clockin_date.year == target_date['year'] and clockin_date.month == target_date['month'] and clockin_date.day == target_date['day']:

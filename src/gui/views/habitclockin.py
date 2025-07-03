@@ -80,7 +80,6 @@ def Habitclockin(root, max_width, max_height):
             widget.destroy()
 
         habits = services.HabitServices.get_habits()
-        print(habits)
 
         r = 0
         for habit in habits:

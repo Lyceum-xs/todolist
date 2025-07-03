@@ -10,41 +10,50 @@
         body {
             font-family: 'Inter', sans-serif;
         }
+
         .tab-button.active {
             border-color: #4f46e5;
             color: #4f46e5;
             background-color: #eef2ff;
         }
+
         .modal {
             transition: opacity 0.3s ease;
         }
+
         .progress-ring-circle {
             transition: stroke-dashoffset 0.5s linear;
             transform: rotate(-90deg);
             transform-origin: 50% 50%;
         }
+
         .calendar-day {
             transition: background-color 0.2s ease;
         }
-        .calendar-day.selected {
-            background-color: #c7d2fe !important;
-            color: #1e3a8a;
-            font-weight: bold;
-        }
+
+            .calendar-day.selected {
+                background-color: #c7d2fe !important;
+                color: #1e3a8a;
+                font-weight: bold;
+            }
+
         .subtask-container {
             transition: max-height 0.3s ease-in-out;
             max-height: 0;
             overflow: hidden;
         }
-        .subtask-container.expanded {
-            max-height: 1000px; /* A large enough value to show all content */
-        }
+
+            .subtask-container.expanded {
+                max-height: 1000px; /* A large enough value to show all content */
+            }
+
         .toggle-icon {
             transition: transform 0.3s ease;
         }
-        .toggle-icon.expanded {
-            transform: rotate(90deg);
-        }
+
+            .toggle-icon.expanded {
+                transform: rotate(90deg);
+            }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800">
@@ -99,7 +108,7 @@
             </div>
 
             <div id="habits-content" class="hidden">
-                 <div class="bg-white p-6 rounded-xl shadow-sm mb-6">
+                <div class="bg-white p-6 rounded-xl shadow-sm mb-6">
                     <h2 class="text-xl font-semibold mb-4">养成新习惯</h2>
                     <form id="create-habit-form" class="space-y-4">
                         <input id="habit-name" type="text" placeholder="习惯名称 (如: 每日阅读)" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" required>
@@ -141,7 +150,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <div id="calendar-content" class="hidden">
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm">
@@ -192,9 +201,9 @@
             </form>
         </div>
     </div>
-    
+
     <datalist id="task-names-list"></datalist>
-    
+
     <audio id="alarm-sound" src="https://assets.mixkit.co/sfx/preview/mixkit-clear-announce-tones-2861.mp3" preload="auto"></audio>
 
     <script>
@@ -221,6 +230,14 @@
                 alert(`操作失败: ${error.message}`);
                 return null;
             }
+        }
+
+        // 修复函数：格式化日期为本地日期字符串 (YYYY-MM-DD)
+        function formatDateString(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
         }
 
         async function handleDeleteHabit(habitId) {
@@ -260,7 +277,7 @@
             const hasChildren = task.children && task.children.length > 0;
             const container = document.createElement('div');
             container.id = `task-container-${task.id}`;
-            
+
             const taskEl = document.createElement('div');
             taskEl.className = `p-4 rounded-lg flex items-center gap-4 transition-all ${task.completed ? 'bg-gray-100 text-gray-500' : 'bg-white shadow-sm hover:shadow-md'}`;
             if (level > 0) {
@@ -268,22 +285,22 @@
             }
 
             taskEl.innerHTML = `
-                <div class="flex items-center gap-2 shrink-0">
-                    ${hasChildren ? `<button onclick="toggleSubtasks(${task.id})" class="p-1 rounded-full hover:bg-gray-200"><svg id="toggle-icon-${task.id}" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 toggle-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg></button>` : '<div class="w-6"></div>'}
-                    <input type="checkbox" class="h-6 w-6 rounded-full text-indigo-600 focus:ring-indigo-500 border-gray-300" onchange="toggleTaskComplete(${task.id}, this.checked)" ${task.completed ? 'checked' : ''}>
-                </div>
-                <div class="flex-1 cursor-pointer min-w-0" onclick="openEditModal(${task.id})">
-                    <div class="flex items-center gap-2 flex-wrap">
-                        <p class="font-medium truncate ${task.completed ? 'line-through' : ''}">${task.name}</p>
-                        ${task.urgent ? `<span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-red-100 text-red-700">紧急</span>` : ''}
-                        ${task.importance ? `<span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-700">重要</span>` : ''}
+                    <div class="flex items-center gap-2 shrink-0">
+                        ${hasChildren ? `<button onclick="toggleSubtasks(${task.id})" class="p-1 rounded-full hover:bg-gray-200"><svg id="toggle-icon-${task.id}" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 toggle-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg></button>` : '<div class="w-6"></div>'}
+                        <input type="checkbox" class="h-6 w-6 rounded-full text-indigo-600 focus:ring-indigo-500 border-gray-300" onchange="toggleTaskComplete(${task.id}, this.checked)" ${task.completed ? 'checked' : ''}>
                     </div>
-                    <p class="text-sm text-gray-500 truncate">${task.description || '没有描述'}</p>
-                </div>
-                <button onclick="handleDeleteTask(${task.id})" class="text-gray-400 hover:text-red-500 transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
-                </button>
-            `;
+                    <div class="flex-1 cursor-pointer min-w-0" onclick="openEditModal(${task.id})">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <p class="font-medium truncate ${task.completed ? 'line-through' : ''}">${task.name}</p>
+                            ${task.urgent ? `<span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-red-100 text-red-700">紧急</span>` : ''}
+                            ${task.importance ? `<span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-700">重要</span>` : ''}
+                        </div>
+                        <p class="text-sm text-gray-500 truncate">${task.description || '没有描述'}</p>
+                    </div>
+                    <button onclick="handleDeleteTask(${task.id})" class="text-gray-400 hover:text-red-500 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
+                    </button>
+                `;
             container.appendChild(taskEl);
 
             if (hasChildren) {
@@ -295,7 +312,7 @@
                 });
                 container.appendChild(subtaskContainer);
             }
-            
+
             return container;
         }
 
@@ -333,7 +350,7 @@
                 toggleIcon.classList.toggle('expanded');
             }
         }
-        
+
         document.getElementById('create-task-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const parentName = document.getElementById('task-parent-name').value.trim();
@@ -364,7 +381,7 @@
                 e.target.reset();
             }
         });
-        
+
         async function toggleTaskComplete(taskId, isCompleted) {
             const result = await apiRequest(`/tasks/${taskId}`, 'PATCH', { completed: isCompleted });
             if (result) {
@@ -395,7 +412,7 @@
 
             const parentTask = allTasks.find(t => t.id === task.parent_id);
             document.getElementById('edit-task-parent-name').value = parentTask ? parentTask.name : '';
-            
+
             document.getElementById('edit-task-due-date').value = task.due_date ? task.due_date.slice(0, 16) : '';
             document.getElementById('edit-task-important').checked = task.importance;
             document.getElementById('edit-task-urgent').checked = task.urgent;
@@ -409,7 +426,7 @@
         document.getElementById('edit-task-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const taskId = parseInt(document.getElementById('edit-task-id').value);
-            
+
             const parentName = document.getElementById('edit-task-parent-name').value.trim();
             let parentId = 0;
             if (parentName) {
@@ -454,26 +471,31 @@
                     const streak = await apiRequest(`/habits/${habit.id}/streak`);
                     const habitEl = document.createElement('div');
                     habitEl.className = 'bg-white p-5 rounded-xl shadow-sm flex flex-col justify-between';
-                    const today = new Date().toISOString().split('T')[0];
-                    const hasLoggedToday = habit.logs.some(log => log.date.startsWith(today));
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    const todayStr = formatDateString(today);
+                    const hasLoggedToday = habit.logs.some(log => {
+                        const logDate = new Date(log.date);
+                        return formatDateString(logDate) === todayStr;
+                    });
                     habitEl.innerHTML = `
-                        <div>
-                            <h3 class="font-bold text-lg text-gray-800">${habit.name}</h3>
-                            <p class="text-sm text-gray-500 mt-1 h-10">${habit.description || ''}</p>
-                        </div>
-                        <div class="flex items-center justify-between mt-4">
-                            <div class="text-center">
-                                <p class="text-3xl font-bold text-teal-600">${streak}</p>
-                                <p class="text-xs text-gray-500">连续打卡</p>
+                            <div>
+                                <h3 class="font-bold text-lg text-gray-800">${habit.name}</h3>
+                                <p class="text-sm text-gray-500 mt-1 h-10">${habit.description || ''}</p>
                             </div>
-                            <button onclick="logHabit(${habit.id}, this)" class="px-5 py-2 rounded-lg font-semibold text-white ${hasLoggedToday ? 'bg-gray-400 cursor-not-allowed' : 'bg-teal-500 hover:bg-teal-600'}" ${hasLoggedToday ? 'disabled' : ''}>
-                                ${hasLoggedToday ? '已打卡' : '打卡'}
-                            </button>
-                            <button onclick="handleDeleteHabit(${habit.id})" class="text-gray-400 hover:text-red-500 transition-colors ml-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
-                            </button>
-                        </div>
-                    `;
+                            <div class="flex items-center justify-between mt-4">
+                                <div class="text-center">
+                                    <p class="text-3xl font-bold text-teal-600">${streak}</p>
+                                    <p class="text-xs text-gray-500">连续打卡</p>
+                                </div>
+                                <button onclick="logHabit(${habit.id}, this)" class="px-5 py-2 rounded-lg font-semibold text-white ${hasLoggedToday ? 'bg-gray-400 cursor-not-allowed' : 'bg-teal-500 hover:bg-teal-600'}" ${hasLoggedToday ? 'disabled' : ''}>
+                                    ${hasLoggedToday ? '已打卡' : '打卡'}
+                                </button>
+                                <button onclick="handleDeleteHabit(${habit.id})" class="text-gray-400 hover:text-red-500 transition-colors ml-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
+                                </button>
+                            </div>
+                        `;
                     habitList.appendChild(habitEl);
                 }
             } else {
@@ -602,21 +624,39 @@
             const firstDayOfMonth = new Date(year, month, 1).getDay();
             const daysInMonth = new Date(year, month + 1, 0).getDate();
             for (let i = 0; i < firstDayOfMonth; i++) grid.insertAdjacentHTML('beforeend', '<div></div>');
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const todayStr = formatDateString(today);
+
             for (let day = 1; day <= daysInMonth; day++) {
                 const date = new Date(year, month, day);
-                const dateString = date.toISOString().split('T')[0];
-                const isToday = dateString === new Date().toISOString().split('T')[0];
-                const hasTask = allTasks.some(task => task.due_date && task.due_date.startsWith(dateString));
-                const hasHabitLog = allHabits.some(habit => habit.logs.some(log => log.date.startsWith(dateString)));
-                let dayHtml = `<div id="day-${dateString}" class="calendar-day h-16 p-2 border border-gray-100 rounded-lg cursor-pointer hover:bg-gray-100 ${isToday ? 'bg-indigo-100' : ''}" onclick="showDayDetails('${dateString}', this)">
-                        <div class="text-right text-sm">${day}</div><div class="flex justify-center items-center space-x-1 mt-1">`;
+                const dateString = formatDateString(date);
+                const isToday = dateString === todayStr;
+
+                // 修复：使用本地日期字符串进行比较
+                const hasTask = allTasks.some(task => {
+                    if (!task.due_date) return false;
+                    const taskDate = new Date(task.due_date);
+                    return formatDateString(taskDate) === dateString;
+                });
+
+                const hasHabitLog = allHabits.some(habit => {
+                    return habit.logs.some(log => {
+                        const logDate = new Date(log.date);
+                        return formatDateString(logDate) === dateString;
+                    });
+                });
+
+                let dayHtml = `<div id="day-${dateString}" class="calendar-day h-16 p-2 border border-gray-100 rounded-lg cursor-pointer hover:bg-gray-100 ${isToday ? 'bg-indigo-100' : ''}" onclick="showDayDetails('${dateString}', this)">`;
+                dayHtml += `<div class="text-right text-sm">${day}</div><div class="flex justify-center items-center space-x-1 mt-1">`;
                 if (hasTask) dayHtml += '<div class="w-2 h-2 bg-blue-500 rounded-full" title="有任务"></div>';
                 if (hasHabitLog) dayHtml += '<div class="w-2 h-2 bg-green-500 rounded-full" title="有打卡"></div>';
                 dayHtml += '</div></div>';
                 grid.insertAdjacentHTML('beforeend', dayHtml);
             }
         }
-        
+
         function showDayDetails(dateString, element) {
             if (selectedDateElement) selectedDateElement.classList.remove('selected');
             if (element) {
@@ -625,10 +665,18 @@
             }
             const detailsTitle = document.getElementById('details-title');
             const detailsContent = document.getElementById('details-content');
-            const date = new Date(dateString);
+            const dateParts = dateString.split('-');
+            const date = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
             detailsTitle.textContent = `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
             let html = '';
-            const tasksForDay = allTasks.filter(task => task.due_date && task.due_date.startsWith(dateString));
+
+            // 修复：使用本地日期字符串进行比较
+            const tasksForDay = allTasks.filter(task => {
+                if (!task.due_date) return false;
+                const taskDate = new Date(task.due_date);
+                return formatDateString(taskDate) === dateString;
+            });
+
             html += '<h5 class="font-semibold text-sm mb-2 text-blue-600">到期任务</h5>';
             if (tasksForDay.length > 0) {
                 html += '<ul class="list-disc list-inside space-y-1 text-gray-700 text-sm">';
@@ -637,7 +685,15 @@
             } else {
                 html += '<p class="text-sm text-gray-500">没有任务。</p>';
             }
-            const habitsLoggedToday = allHabits.filter(habit => habit.logs.some(log => log.date.startsWith(dateString)));
+
+            // 修复：使用本地日期字符串进行比较
+            const habitsLoggedToday = allHabits.filter(habit => {
+                return habit.logs.some(log => {
+                    const logDate = new Date(log.date);
+                    return formatDateString(logDate) === dateString;
+                });
+            });
+
             html += '<h5 class="font-semibold text-sm mt-4 mb-2 text-green-600">完成的习惯</h5>';
             if (habitsLoggedToday.length > 0) {
                 html += '<ul class="list-disc list-inside space-y-1 text-gray-700 text-sm">';
@@ -669,7 +725,12 @@
             renderTasks();
             renderHabits();
             renderCalendar();
-            showDayDetails(new Date().toISOString().split('T')[0], document.getElementById(`day-${new Date().toISOString().split('T')[0]}`));
+
+            // 修复：使用本地日期字符串初始化详情
+            const today = new Date();
+            const todayStr = formatDateString(today);
+            showDayDetails(todayStr, document.getElementById(`day-${todayStr}`));
+
             selectPomodoroMode('pomodoro');
         }
 
