@@ -81,7 +81,7 @@ def Calendar(root, max_width, max_height):
         tasks = services.TaskServices.gettasks('id')
         r = 1
         for task in tasks:
-            due_date = services.TimeServices.turn_datetime(task['due_date'])
+            due_date = services.TimeServices.turn_datetime_strp(task['due_date'])
 
             if due_date.year == target_date['year'] and due_date.month == target_date['month'] and due_date.day == target_date['day']:
                 ttk.Label(frame, text = task['name'], font = ('consolas', 10)).grid(row = r, column = 0, sticky = 'w')
@@ -93,7 +93,7 @@ def Calendar(root, max_width, max_height):
         for habit in habits:
             logs = habit['logs']
             for log in logs:
-                clockin_date = services.TimeServices.turn_datetime(log['date'])
+                clockin_date = services.TimeServices.turn_datetime_strp(log['date'])
                 if clockin_date.year == target_date['year'] and clockin_date.month == target_date['month'] and clockin_date.day == target_date['day']:
                     ttk.Label(frame, text = habit['name'], font = ('consolas', 10)).grid(row = r, column = 1, sticky = 'w')
             

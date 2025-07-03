@@ -155,7 +155,7 @@ def Home(root, max_width, max_height):
                 parent = ''
             else:
                 parent = task_id_to_tree_id[task['parent_id']]
-            tree_id = tree_view.insert(parent, 'end', text = task['name'], values = (services.TimeServices.turn_datetime(task['due_date']), task['urgent'], task['importance'], task['completed']), tags = (task['id'],))
+            tree_id = tree_view.insert(parent, 'end', text = task['name'], values = (services.TimeServices.turn_datetime_strf(task['due_date']), task['urgent'], task['importance'], task['completed']), tags = (task['id'],))
             task_id_to_tree_id.update({task['id'] : tree_id})
 
         for task_id, is_expanded in expansion_state.items():

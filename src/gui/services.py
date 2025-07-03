@@ -40,7 +40,7 @@ class TimeServices:
         return datetime(year, month, day, hour, minute)
 
     @staticmethod
-    def turn_datetime(time):
+    def turn_datetime_strf(time):
         formats = [
             '%Y-%m-%dT%H:%M:%S.%f',
             '%Y-%m-%dT%H:%M:%S'
@@ -49,6 +49,19 @@ class TimeServices:
         for fmt in formats:
             try:
                 return datetime.strptime(time, fmt).strftime('%Y-%m-%d %H:%M')
+            except ValueError:
+                continue
+
+    @staticmethod
+    def turn_datetime_strp(time):
+        formats = [
+            '%Y-%m-%dT%H:%M:%S.%f',
+            '%Y-%m-%dT%H:%M:%S'
+            ]
+
+        for fmt in formats:
+            try:
+                return datetime.strptime(time, fmt)
             except ValueError:
                 continue
 
