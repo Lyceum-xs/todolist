@@ -14,6 +14,11 @@
     jenkins_user: jenkins
     jenkins_group: jenkins
   tasks:
+    - name: 确保Jenkins用户Git配置信任部署目录
+      ansible.builtin.command:
+        cmd: git config --global --add safe.directory /opt/todolist
+        chdir: /tmp
+
     - name: 确保基础安装目录存在
       ansible.builtin.file:
         path: "{{ base_install_dir }}"
@@ -36,15 +41,6 @@
         chdir: "{{ app_full_path }}"
       args:
         creates: "{{ venv_path }}/bin/activate"
-
-    - name: 确保Git仓库目录的所有者是Jenkins用户
-      ansible.builtin.file:
-        path: "{{ app_base_dir }}" # /opt/todolist
-        owner: "{{ jenkins_user }}"
-        group: "{{ jenkins_group }}"
-        recurse: yes # 递归地改变目录及其内容的拥有者
-        state: directory
-      become: yes
 
     - name: 安装Python依赖
       ansible.builtin.pip:
