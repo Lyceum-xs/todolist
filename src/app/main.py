@@ -43,3 +43,8 @@ def on_startup():
             create_tables()
     else:
         create_tables()
+
+if __name__ == "__main__":
+    import uvicorn
+    # 推荐使用 0.0.0.0 让外部可访问，端口可根据需要设置
+    uvicorn.run(app, host="0.0.0.0", port=8000)
