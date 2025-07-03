@@ -25,7 +25,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],          # 指定前端域名
+    allow_origins=["*"],          #指定前端域名
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -35,7 +35,7 @@ app.include_router(habits.router)
 
 @app.on_event("startup")
 def on_startup():
-    # 仅对 SQLite 文件数据库做“若不存在则建表”；其它数据库直接建表
+    #如果sql并且数据库文件还没生成，就建表；否则直接建表
     db_url = os.getenv("DATABASE_URL", "sqlite:///./data/todo.db")
     if db_url.startswith("sqlite"):
         file_path = db_url.split("///", 1)[-1]

@@ -4,9 +4,9 @@ from sqlalchemy.orm import Session, sessionmaker, scoped_session,declarative_bas
 from contextlib import contextmanager
 from typing import Generator
 
-# 获取当前文件所在目录
+# 获取当前文件的目录
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-# 数据库文件路径
+# 设置数据库文件路径
 DATABASE_PATH = os.path.join(BASE_DIR, 'todo.db')
 DATABASE_URL = f"sqlite:///{DATABASE_PATH}"
 
@@ -14,39 +14,43 @@ engine = create_engine(
     DATABASE_URL, connect_args={"check_same_thread": False}, future=True
 )
 
-# 会话工厂
+# 创建数据库会话工厂
 SessionLocal = sessionmaker(
     bind=engine,
     autoflush=False,
     autocommit=False,
     future=True)
 
-# 线程安全的会话作用域
+# 创建线程安全的会话
 SessionScoped = scoped_session(SessionLocal)
 
-#声明基类
+# 定义数据库模型基类
 Base = declarative_base()
 
 def create_tables():
-    from . import models  # 触发模型注册
+    from . import models  # 模型初始化
     print('Creating tables...')
     print(f"Database path: {DATABASE_PATH}")
     Base.metadata.create_all(bind=engine)
     print('Tables created successfully!')
 
-def drop_tables(): # 用于清空数据库
+def drop_tables(): # 删除所有数据库表
     Base.metadata.drop_all(bind=engine)
 
 @contextmanager
 def db_session() -> Generator[Session, None, None]:
-    db = SessionLocal()  # 1. 创建会话
+    # 创建数据库会话
+    db = SessionLocal()  
     try:
-        yield db        # 2. 交出会话控制权
+        # 提供数据库会话给调用的人
+        yield db        
     except Exception:
-        db.rollback()   # 3. 异常时回滚
+        # 发生异常时滚回
+        db.rollback()   
         raise
     finally:
-        db.close()      # 4. 确保关闭
+        # 关闭数据库会话
+        db.close()      
 
 def get_db():
     db = SessionLocal()

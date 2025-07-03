@@ -12,7 +12,7 @@ class TaskService:
 
         validated_data = schemas.TaskCreate(**task_data)
 
-        # 检查父任务是否存在
+        #检查父任务是否存在
         if validated_data.parent_id is not None:
             if not crud.get_task(db, validated_data.parent_id):
                 raise ValueError(f"父任务ID {validated_data.parent_id} 不存在")
@@ -38,9 +38,9 @@ class TaskService:
         if sort_by == "id":
             tasks_from_db.sort(key=lambda t: t.id) # 按ID升序排序
         elif sort_by == "ddl":
-            # 将 None 值视为最大，使其排在最后（在已完成/未完成的各自组内）
+            #将None值视为最大，使其排在最后（在已完成/未完成的各自组内）
             tasks_from_db.sort(key=lambda t: t.due_date if t.due_date is not None else datetime.max)
-        else: # 默认按优先级排序
+        else: #默认按优先级排序
             tasks_from_db.sort(key=lambda t: t.priority_parameter, reverse=True)
 
         return [schemas.TaskOut.model_validate(task) for task in tasks_from_db]
@@ -55,7 +55,7 @@ class TaskService:
         if validated_data.parent_id is not None:
             if not crud.get_task(db, validated_data.parent_id):
                 raise ValueError(f"父任务ID {validated_data.parent_id} 不存在")
-            # 防止将任务设置为自己的父任务
+            #防止将任务设置为自己的父任务
             if validated_data.parent_id == task_id:
                 raise ValueError("不能将任务设置为自己的父任务")
         updated_task = crud.update_task(db, task_id, validated_data)
@@ -90,7 +90,7 @@ class HabitService:
         """创建习惯"""
         validated_data = schemas.HabitCreate(**habit_data)
 
-        # 检查习惯名称是否已存在
+        #检查习惯名称是否存在
         if crud.get_habit_by_name(db, validated_data.name):
             raise ValueError(f"习惯 '{validated_data.name}' 已存在。")
 
@@ -106,7 +106,7 @@ class HabitService:
     @staticmethod
     def create_habit_log(db: Session, habit_id: int, log_data: dict) -> schemas.HabitLogOut:
         """创建打卡记录"""
-        # 检查习惯是否存在
+        #检查习惯是否存在
         if not crud.get_habit(db, habit_id):
             raise ValueError("习惯不存在")
 
@@ -114,7 +114,7 @@ class HabitService:
         if isinstance(log_date, datetime):
             log_date = log_date.date()
 
-        # 检查是否重复打卡
+        #检查是否重复打卡
         if crud.get_log_by_date(db, habit_id, log_date):
             raise ValueError("今日已打卡，请勿重复操作。")
 
@@ -144,10 +144,10 @@ class HabitService:
         today = date.today()
 
         start_date = today
-        # 如果今天没打卡，从昨天开始算
+        #如果今天没打卡，从昨天开始算
         if today not in log_dates:
             start_date = today - timedelta(days=1)
-            # 如果昨天也没打卡，连击为0
+            #如果昨天也没打卡，连续打卡设置为0
             if start_date not in log_dates:
                 return 0
 
@@ -161,6 +161,6 @@ class HabitService:
     @staticmethod
     def delete_habit(db: Session, habit_id: int):
         """删除习惯"""
-        # 调用crud层来执行数据库删除操作
+        #调用crud层来执行数据库删除操作
         if not crud.delete_habit(db, habit_id):
             raise ValueError("习惯不存在")
