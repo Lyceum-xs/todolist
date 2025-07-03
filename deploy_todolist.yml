@@ -40,15 +40,6 @@
         version: main
         force: yes # 谨慎使用，会覆盖目标目录的任何本地更改
 
-    - name: 确保克隆后的文件所有者是Jenkins用户 (递归，以防 git 模块内部又变回 root)
-      ansible.builtin.file:
-        path: "{{ app_base_dir }}"
-        owner: "{{ jenkins_user }}"
-        group: "{{ jenkins_group }}"
-        recurse: yes # 递归地改变所有权
-        state: directory
-      become: yes
-
     - name: 创建Python虚拟环境
       ansible.builtin.command:
         cmd: python3 -m venv "{{ venv_path }}"
