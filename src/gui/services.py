@@ -197,16 +197,92 @@ class TaskServices:
 
 class HabitServices:
     @staticmethod
-    def create_habit():
-        pass
+    def create_habit(habit):
+        url = f'{BASE_URL}/habits'
+
+        try:
+            response = requests.post(url, json = habit)
+            if response.status_code == 201:
+                print(f'create habit successfully: {response.json()}')
+                return response.json()
+            else:
+                error_message = f'create habit failed: {response.status_code} - {response.text}'
+                print(error_message)
+                return {'error' : error_message}
+        except requests.exceptions.RequestException as e:
+            error_message = f'the network request failed {str(e)}'
+            print(error_message)
+            return {'error' : error_message}
+        except Exception as e:
+            error_message = f"unkonwn error: {str(e)}"
+            print(error_message)
+            return {"error": error_message}
 
     @staticmethod
-    def clockin_habit():
-        pass
+    def clockin_habit(habit_id):
+        url = f'{BASE_URL}/habits/{habit_id}/logs'
+
+        try:
+            response = requests.post(url, json = {})
+
+            if response.status_code == 201:
+                print(f'clockin {habit_id} successfully')
+                return True
+            else:
+                print(f'clockin {habit_id} failed: {response.status_code} - {response.text}')
+                return False
+        except Exception as e:
+            print(f'request failed: {str(e)}')
+            return False
     
     @staticmethod
-    def delete_habit():
-        pass
+    def delete_habit(habit_id):
+        url = f'{BASE_URL}/habits/{habit_id}'
+
+        try:
+            response = requests.delete(url)
+
+            if response.status_code == 204:
+                print(f'delete {habit_id} successfully')
+                return True
+            else:
+                print(f'delete {habit_id} failed: {response.status_code} - {response.text}')
+                return False
+        except Exception as e:
+            print(f'request failed: {str(e)}')
+            return False
+
+    @staticmethod
+    def get_habits():
+        url = f'{BASE_URL}/habits'
+
+        try:
+            response = requests.get(url)
+
+            if response.status_code == 200:
+                return response.json()
+            else:
+                print(f'get habits failed: {response.status_code} - {response.text}')
+                return []
+        except Exception as e:
+            print(f'request failed: {str(e)}')
+            return []
+
+    @staticmethod
+    def get_consecutive_clockin_days(habit_id):
+        url = f'{BASE_URL}/habits/{habit_id}/streak'
+
+        try:
+            response = requests.get(url)
+
+            if response.status_code == 200:
+                return response.json()
+            else:
+                print(f'get {habit_id} consecutive clockin days failed: {response.status_code} - {response.text}')
+                return 0
+        except Exception as e:
+            print(f'request failed: {str(e)}')
+            return 0
 
 
 

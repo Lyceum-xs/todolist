@@ -14,6 +14,7 @@ def Home(root, max_width, max_height):
     
     root.columnconfigure(0, weight=1)
     root.rowconfigure(1, weight = 0)
+    root.rowconfigure(5, weight = 0)
 
     # Search Bar
     #-------------------------- begin ------------------------------
@@ -154,7 +155,6 @@ def Home(root, max_width, max_height):
                 parent = task_id_to_tree_id[task['parent_id']]
             tree_id = tree_view.insert(parent, 'end', text = task['name'], values = (task['due_date'], task['urgent'], task['importance'], task['completed']), tags = (task['id'],))
             task_id_to_tree_id.update({task['id'] : tree_id})
-        print(task_id_to_tree_id)
 
         for task_id, is_expanded in expansion_state.items():
             if task_id in task_id_to_tree_id:
