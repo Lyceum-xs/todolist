@@ -16,17 +16,6 @@ def Home(root, max_width, max_height):
     root.rowconfigure(1, weight = 0)
     root.rowconfigure(5, weight = 0)
 
-    # Search Bar
-    #-------------------------- begin ------------------------------
-    search_frame = ttk.Frame(root)
-    search_frame.grid(row=0, column=0, sticky='w', pady=(15,0), padx=40)
-
-    target = tk.StringVar()
-    target.set('Search Task')
-
-    search_bar = tk.Entry(search_frame, textvariable = target, width = 45, font = ('consolas', 12))
-    search_bar.grid(row = 0, column = 0)
-
     style = ttk.Style()
     style.configure('Home.TButton', 
                    background='#FFFFFF',
@@ -36,12 +25,25 @@ def Home(root, max_width, max_height):
                    padding=0,
                    relief='flat')
 
+    # Search Bar
+    #-------------------------- begin ------------------------------
+    '''
+    search_frame = ttk.Frame(root)
+    search_frame.grid(row=0, column=0, sticky='w', pady=(15,0), padx=40)
+
+    target = tk.StringVar()
+    target.set('Search Task')
+
+    search_bar = tk.Entry(search_frame, textvariable = target, width = 45, font = ('consolas', 12))
+    search_bar.grid(row = 0, column = 0)
+
     def search():
         value = target.get()
         print(f'Get entry: {value}')
 
     search_button = ttk.Button(search_frame, command = search, text = 'search', style = 'Home.TButton')
     search_button.grid(row = 0, column = 1, padx = (1, 0))
+    '''
     #--------------------------- End --------------------------
 
 
@@ -153,7 +155,7 @@ def Home(root, max_width, max_height):
                 parent = ''
             else:
                 parent = task_id_to_tree_id[task['parent_id']]
-            tree_id = tree_view.insert(parent, 'end', text = task['name'], values = (task['due_date'], task['urgent'], task['importance'], task['completed']), tags = (task['id'],))
+            tree_id = tree_view.insert(parent, 'end', text = task['name'], values = (services.TimeServices.turn_datetime(task['due_date']), task['urgent'], task['importance'], task['completed']), tags = (task['id'],))
             task_id_to_tree_id.update({task['id'] : tree_id})
 
         for task_id, is_expanded in expansion_state.items():

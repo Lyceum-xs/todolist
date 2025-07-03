@@ -39,6 +39,10 @@ class TimeServices:
     def create_datetime(year, month, day, hour, minute):
         return datetime(year, month, day, hour, minute)
 
+    @staticmethod
+    def turn_datetime(time):
+        return datetime.strptime(time, '%Y-%m-%dT%H:%M:%S')
+
 
 class TaskServices:
     @staticmethod

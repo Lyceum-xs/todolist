@@ -20,7 +20,7 @@ class Task(Base):
 
     parent_id: Mapped[int | None] = mapped_column(ForeignKey("tasks.id"))
 
-    # 单个父任务（uselist=False）
+    #指向父任务
     parent: Mapped["Task"] = relationship(
         "Task",
         remote_side=[id],
@@ -28,7 +28,7 @@ class Task(Base):
         uselist=False
     )
 
-    # 子任务列表
+    #子任务集合
     subtasks: Mapped[list["Task"]] = relationship(
         "Task",
         back_populates="parent",
@@ -49,8 +49,7 @@ class Task(Base):
     @property
     def priority_parameter(self) -> float:
         """
-        计算任务优先级 (0~1)。加入时区兼容处理，避免比较
-        “offset‑aware” 与 “offset‑naive” datetime 抛错。
+        计算任务优先级(范围 0~1)
         """
         if self.completed:
             return 0.0
@@ -62,22 +61,22 @@ class Task(Base):
         importance_value = 1 if self.importance else 0
         urgent_value = 1 if self.urgent else 0
 
-        now = datetime.now(timezone.utc)  # 始终使用带时区的当前时间
+        now = datetime.now(timezone.utc)  #始终使用带时区的当前时间
 
         if self.due_date:
             due = self.due_date
 
-            # 若数据库里存储的是 naive datetime，则假定为 UTC
+            #如果是无时区时间，按 UTC 处理
             if due.tzinfo is None or due.tzinfo.utcoffset(due) is None:
                 due = due.replace(tzinfo=timezone.utc)
 
             if due < now:
-                due_date_value = 1.0  # 已超期
+                due_date_value = 1.0  #已超期
             else:
                 days_to_due = max((due - now).days, 0)
                 due_date_value = 1 / (days_to_due + 1)
         else:
-            due_date_value = 0.0  # 无截止日期
+            due_date_value = 0.0  #无截止日期
 
         return (
             importance_value * importance_weight
