@@ -41,7 +41,16 @@ class TimeServices:
 
     @staticmethod
     def turn_datetime(time):
-        return datetime.strptime(time, '%Y-%m-%dT%H:%M:%S')
+        formats = [
+            '%Y-%m-%dT%H:%M:%S.%f',
+            '%Y-%m-%dT%H:%M:%S'
+            ]
+
+        for fmt in formats:
+            try:
+                return datetime.strptime(time, fmt).strftime('%Y-%m-%d %H:%M')
+            except ValueError:
+                continue
 
 
 class TaskServices:
@@ -53,11 +62,6 @@ class TaskServices:
             response = requests.get(url, {'sort_by' : 'id'})
             if response.status_code == 200:
                 tasks = response.json()
-
-                for task in tasks:
-                    if task['due_date']:
-                        if '.' in task['due_date']:
-                            task['due_date'] = task['due_date'].split('.')[0] + 'Z'
 
                 # Create mapping from task ID to task object
                 task_map = {task['id']: task for task in tasks}
