@@ -219,16 +219,40 @@ document.addEventListener('DOMContentLoaded', () => {
             const taskItem = checkbox.closest('.task-item');
             const taskId = taskItem.dataset.taskId;
             const isCompleted = checkbox.checked;
+
+            // 1. 立即在UI上反映变化，提供即时反馈
             taskItem.classList.toggle('completed', isCompleted);
+
+            // 2. 在后台发送更新请求
             updateTask(taskId, { completed: isCompleted })
                 .then(() => {
-                    // 修改: 更新完成后，重新应用当前的筛选器
+                    // 3. 更新成功后，在本地缓存中也更新这条记录
+                    // 这一步很重要，确保了用户切换筛选时数据是正确的
+                    const taskIndex = tasksCache.findIndex(t => t.id == taskId);
+                    if (taskIndex > -1) {
+                        tasksCache[taskIndex].completed = isCompleted;
+                    }
+
+                    // 4. 判断当前筛选状态，决定是否从视图中移除该项
                     const activeFilter = document.querySelector('.filter-btn.active').dataset.filter;
-                    const tasksToRender = tasksCache.map(t => t.id === taskId ? { ...t, completed: isCompleted } : t);
-                    tasksCache = tasksToRender; // 更新缓存
-                    handleFilterClick({ currentTarget: document.querySelector(`.filter-btn[data-filter="${activeFilter}"]`) });
+                    
+                    // 如果在“待办”页完成了一个任务，或在“已完成”页取消了一个任务，则将它移出视图
+                    if ((activeFilter === 'pending' && isCompleted) || (activeFilter === 'completed' && !isCompleted)) {
+                        // 添加一个简单的淡出动画，然后移除元素
+                        taskItem.style.transition = 'opacity 0.4s ease-out, transform 0.4s ease-out';
+                        taskItem.style.opacity = '0';
+                        taskItem.style.transform = 'translateX(20px)';
+                        setTimeout(() => {
+                            taskItem.remove();
+                            // 检查列表是否为空，如果为空则显示提示信息
+                            if (taskListElement.children.length === 0) {
+                                taskListElement.innerHTML = '<li>太棒了，当前分类下没有任务！</li>';
+                            }
+                        }, 400);
+                    }
                 })
                 .catch(() => {
+                    // 5. 如果更新失败，撤销UI上的更改并提醒用户
                     alert('更新任务状态失败，已为您撤销操作！');
                     taskItem.classList.toggle('completed', !isCompleted);
                     checkbox.checked = !isCompleted;
