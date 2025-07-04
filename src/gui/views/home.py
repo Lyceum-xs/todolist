@@ -251,18 +251,35 @@ def Home(root, max_width, max_height):
 
         services.TaskServices.updatetask(int(tags[0]), {'completed' : True}, updatetask)
         
-        task = services.TaskServices.gettask(int(tags[0]))
-        if task['parent_id'] is not None:
-            parent_task = services.TaskServices.gettask(task['parent_id'])
-            children = services.TaskServices.getchildren(task['parent_id'])
+        def gettask(task, error):
+            if error:
+                print(error)
+                return
 
-            all_done = True
-            for child in children:
-                if not child['completed']:
-                    all_done = False
+            if task['parent_id'] is not None:
+                def getparent(parent_task, error):
+                    if error:
+                        print(error)
+                        return
 
-            if all_done:
-                services.TaskServices.updatetask(task['parent_id'], {'completed' : True}, updatetask)
+                    def getchildren(children, error):
+                        if error:
+                            print(error)
+                            return
+
+                        all_done = True
+                        for child in children:
+                            if not child['completed']:
+                                all_done = False
+
+                        if all_done:
+                            services.TaskServices.updatetask(task['parent_id'], {'completed' : True}, updatetask)
+                
+                    services.TaskServices.getchildren(task['parent_id'], getchildren)
+                
+                services.TaskServices.gettask(task['parent_id'], getparent)
+
+        services.TaskServices.gettask(int(tags[0]), gettask)     
 
     def newchild_item(item):
         tags = tree_view.item(item, 'tags')

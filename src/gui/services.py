@@ -209,21 +209,20 @@ class TaskServices:
         executor.submit(_fetch)
 
     @staticmethod
-    def getchildren(task_id):
+    def getchildren(task_id, callback):
         url = f'{BASE_URL}/tasks/{task_id}/children'
 
         def _fetch():
             try:
                 response = requests.get(url)
                 if response.status_code == 200:
-                    return response.json()
+                    callback(response.json(), None)
                 else:
-                    return []
+                    callback([], 'error')
             except Exception as e:
-                print(f'request failed: {str(e)}')
-                return []
+                callback([], f'request failed: {str(e)}')
 
-        return executor.submit(_fetch).result()
+        executor.submit(_fetch)
 
 class HabitServices:
     @staticmethod
