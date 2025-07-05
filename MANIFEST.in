@@ -1,6 +1,40 @@
-include *.md
-include *.ini
-include *.yaml
+# 包含根目录文件
 include requirements.txt
-recursive-include src/app/templates *
-recursive-include src/app/static *
+include requirements-dev.txt
+include README.md
+include run.py
+include alembic.ini
+include pyproject.toml
+include pytest.ini
+include sonar-project.properties
+include tasks.json
+include *.yml
+include *.json
+
+# 包含文档
+recursive-include docs *
+
+# 包含HTML资源
+recursive-include html *
+
+# 包含迁移脚本
+recursive-include migrations *
+
+# 包含资源文件
+recursive-include resources *
+
+# 包含脚本
+recursive-include scripts *
+
+# 包含测试
+recursive-include tests *
+
+# 包含应用配置文件
+include src/todolist_app/*.yaml
+include src/todolist_app/*.ini
+include src/todolist_app/*.json
+include src/todolist_app/*.env
+
+# 包含可能的隐藏文件
+include .venv
+include .gitignore
