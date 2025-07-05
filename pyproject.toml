@@ -3,29 +3,69 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "todolist_app"
-version = "1.0.0"
-description = "Modern To-Do List application with task management and productivity tools"
+name = "todolist-app"
+version = "0.1.0"
+description = "ToDoList Application with Backend API and GUI"
 readme = "README.md"
-requires-python = ">=3.8"
-license = {text = "MIT"}
-authors = [
-  {name = "这对吗这不队, email = "1718943644@qq.com"}
+authors = [{ name = "这对吗这不队", email = "1718943644@qq.com" }]
+license = { text = "MIT" }
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
 ]
-
+keywords = ["todo", "productivity", "task-management"]
 dependencies = [
-    "requests>=2.25.1",
-    "fastapi>=0.68.0",
-    "uvicorn>=0.15.0",
+    "fastapi>=0.85.0",
+    "uvicorn>=0.19.0",
     "sqlalchemy>=1.4.0",
-    "pydantic>=1.8.0",
-    "python-dotenv>=0.19.0"
+    "pydantic>=1.10.0",
+    "alembic>=1.9.0",
+    "requests>=2.25.0",
+    "tkcalendar>=1.6.1"
 ]
 
-[project.scripts]
-todo-list = "run:main"
+[project.urls]
+Homepage = "https://whucsgitlab.whu.edu.cn/devops/todolist.git"
+Documentation = "https://whucsgitlab.whu.edu.cn/devops/todolist/-/pages"
 
 [tool.setuptools]
-package-dir = {"" = "src"}
-packages = ["app", "gui"]
-include-package-data = true
+packages = [
+    "src",
+    "src.app", 
+    "src.app.routers", 
+    "src.gui", 
+    "src.gui.views", 
+    "src.gui.widgets"
+]
+py-modules = ["run"] 
+
+[tool.setuptools.package-data]
+"src.app" = ["todo.db"]
+"src.gui" = ["resources/**/*"]
+"alembic" = [
+    "migrations/*.py", 
+    "migrations/versions/*.py", 
+    "migrations/script.py.mako"
+]
+
+[tool.setuptools.data-files]
+"share/todolist/html" = ["html/*.html", "html/*.js", "html/*.css"]
+"share/todolist/alembic" = ["alembic.ini"]
+
+[project.scripts]
+todolist = "run:main"
+todolist-backend = "src.app.main:run_backend"
+todolist-gui = "src.gui.main_window:show_root"
+
+[tool.setuptools.dynamic]
+version = { attr = "src.app.__version__" }
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov",
+    "black",
+    "flake8",
+    "mypy"
+]

@@ -1,13 +1,6 @@
 import threading
 import requests
 import time
-import sys
-import os
-
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, BASE_DIR)
-sys.path.insert(0, os.path.join(BASE_DIR, 'src'))
-
 from src.gui import main_window
 from src.app.db import create_tables
 from src.app.main import run_backend

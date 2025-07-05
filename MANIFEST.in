@@ -1,25 +1,23 @@
-# 包含根目录必要文件
+include LICENSE
 include README.md
-include alembic.ini
 include requirements.txt
-include run.py
-include pyproject.toml
+include requirements-dev.txt
+include pytest.ini
+include alembic.ini
+include sonar-project.properties
 
-# 包含数据库迁移脚本
+recursive-include html *
+recursive-include resources *
+recursive-include docs *
 recursive-include migrations *.py
 
-# 包含前端资源
-recursive-include html *
+include scripts/*.sh
+include scripts/*.py
 
-# 包含静态资源
-recursive-include resources *
-
-# 包含测试文件
-recursive-include tests *.py
-
-# 包含文档
-recursive-include docs *.md
-
-# 包含源码目录下的所有Python文件和README
-recursive-include src *.py
-recursive-include src *.md
+global-exclude *.pyc
+global-exclude *.pyo
+global-exclude __pycache__
+global-exclude .git*
+global-exclude .venv
+global-exclude .vs
+global-exclude .scannerwork
