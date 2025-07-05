@@ -42,8 +42,14 @@ def Habitclockin(root, max_width, max_height):
 
     def create_habit():
         habit = {'name' : habit_name.get(), 'description' : habit_description.get(), 'duration' : 0}
-        services.HabitServices.create_habit(habit)
-        update_habits()
+        def create(success, error):
+            if error:
+                print(error)
+                return
+            update_habits()
+
+        services.HabitServices.create_habit(habit, create)
+        
         
 
     create_button = ttk.Button(root, text = 'create', style = 'Hab.TButton', command = create_habit)
@@ -76,42 +82,62 @@ def Habitclockin(root, max_width, max_height):
     habits_frame.columnconfigure(0, weight = 1)
 
     def update_habits():
-        for widget in habits_frame.winfo_children():
-            widget.destroy()
+        clear_frame(habits_frame)
 
-        habits = services.HabitServices.get_habits()
+        def get_habits(habits, error):
+            if error:
+                print(error)
+                return
 
-        r = 0
-        for habit in habits:
-            habit_frame = ttk.Frame(habits_frame)
-            habit_frame.grid(row = r, column = 0, padx = 10, sticky = 'ew')
-            habit_frame.columnconfigure(0, weight = 1)
-            
-            def getdays(habit_id):
-                return services.HabitServices.get_consecutive_clockin_days(habit_id)
+            r = 0
+            for habit in habits:
+                habit_frame = ttk.Frame(habits_frame)
+                habit_frame.grid(row = r, column = 0, padx = 10, sticky = 'ew')
+                habit_frame.columnconfigure(0, weight = 1)
+                
+                name_label = ttk.Label(habit_frame, text = habit['name'], font = ('consolas', 12))
+                description_label = ttk.Label(habit_frame, text = habit['description'], font = ('consolas', 10))
+                name_label.grid(row = 0, column = 0, pady = 5, sticky = 'w')
+                description_label.grid(row = 1, column = 0, sticky = 'w')
 
-            name_label = ttk.Label(habit_frame, text = habit['name'], font = ('consolas', 12))
-            description_label = ttk.Label(habit_frame, text = habit['description'], font = ('consolas', 10))
-            duration_label = ttk.Label(habit_frame, text = f'Consecutive clockin days:{getdays(habit['id'])}', font = ('consolas', 12))
-            name_label.grid(row = 0, column = 0, pady = 5, sticky = 'w')
-            description_label.grid(row = 1, column = 0, sticky = 'w')
-            duration_label.grid(row = 0, column = 1, sticky = 'e', padx = 5)
-            
+                duration_label = ttk.Label(habit_frame, text = 'calculating...', font = ('consolas', 12)) 
+                duration_label.grid(row = 0, column = 1, sticky = 'e', padx = 5)
 
+                def get_consecutive_clockin_days(days, error):
+                    if error:
+                        print(error)
+                        duration_label.config(text = 'get failed...')
+                        return
+                    
+                    duration_label.config(text = f'Consecutive clockin days:{days}') 
 
-            delete_button = ttk.Button(habit_frame, text = 'delete', style = 'Hab.TButton', command = lambda habit_id = habit['id']: delhabit(habit_id))
-            delete_button.grid(row = 0, column = 2, sticky = 'e')
-            clockin_button = ttk.Button(habit_frame, text = 'clockin', style = 'Hab.TButton', command = lambda habit_id = habit['id']: clohabit(habit_id))
-            clockin_button.grid(row = 1, column = 2, sticky = 'e')
-        
-            def delhabit(habit_id):
-                services.HabitServices.delete_habit(habit_id)
-                update_habits()
+                services.HabitServices.get_consecutive_clockin_days(habit['id'], get_consecutive_clockin_days)
 
-            def clohabit(habit_id):
-                services.HabitServices.clockin_habit(habit_id)
-                update_habits()
-            r += 1
+                delete_button = ttk.Button(habit_frame, text = 'delete', style = 'Hab.TButton', command = lambda habit_id = habit['id']: delhabit(habit_id))
+                delete_button.grid(row = 0, column = 2, sticky = 'e')
+                clockin_button = ttk.Button(habit_frame, text = 'clockin', style = 'Hab.TButton', command = lambda habit_id = habit['id']: clohabit(habit_id))
+                clockin_button.grid(row = 1, column = 2, sticky = 'e')
+                
+                def delete_habit(success, error):
+                    if error:
+                        print(error)
+                        return
+                    update_habits()
+
+                def delhabit(habit_id):
+                    services.HabitServices.delete_habit(habit_id, delete_habit)
+                    
+                def clockin_habit(success, error):
+                    if error:
+                        print(error)
+                        return
+                    update_habits()
+
+                def clohabit(habit_id):
+                    services.HabitServices.clockin_habit(habit_id, clockin_habit)
+                r += 1
+
+        habits = services.HabitServices.get_habits(get_habits)
 
     update_habits()
 #--------------------------------- End --------------------------------

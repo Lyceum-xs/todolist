@@ -1,0 +1,6 @@
+include *.md
+include *.ini
+include *.yaml
+include requirements.txt
+recursive-include src/app/templates *
+recursive-include src/app/static *

@@ -42,14 +42,9 @@ def Calendar(root, max_width, max_height):
     target_date = {'year' : nowtime['year'], 'month' : nowtime['month'], 'day' : nowtime['day']}
 
     def clear_cavans():
-        for widget in clockin_frame.grid_slaves():
-            row = widget.grid_info().get('row', -1)
-            if row is not None:
-                widget.destroy()
+        clear_frame(clockin_frame)
 
     def draw_cavans():
-        clear_cavans()
-        
         date_label = ttk.Label(clockin_frame, text = f'{target_date['year']}-{target_date['month']}-{target_date['day']}', style = 'Cal.TLabel')
         date_label.grid(row = 0, column = 0, sticky = 'w', padx = (10, 0))
         
@@ -78,28 +73,44 @@ def Calendar(root, max_width, max_height):
         ttk.Label(frame, text = 'Overdue tasks', font = ('consolas', 10)).grid(row = 0, column = 0, sticky = 'ew')
         ttk.Label(frame, text = 'Clockin habits', font = ('consolas', 10)).grid(row = 0, column = 1, sticky = 'ew')
 
-        tasks = services.TaskServices.gettasks('id')
-        r = 1
-        for task in tasks:
-            due_date = services.TimeServices.turn_datetime_strp(task['due_date'])
 
-            if due_date.year == target_date['year'] and due_date.month == target_date['month'] and due_date.day == target_date['day']:
-                ttk.Label(frame, text = task['name'], font = ('consolas', 10)).grid(row = r, column = 0, sticky = 'w')
+        def gettasks(tasks, error):
+            if error:
+                print(error)
+                return
 
-                r += 1
+            r = 1
+            for task in tasks:
+                due_date = services.TimeServices.turn_datetime_strp(task['due_date'])
 
-        habits = services.HabitServices.get_habits()
-        r = 1
-        for habit in habits:
-            logs = habit['logs']
-            for log in logs:
-                clockin_date = services.TimeServices.turn_datetime_strp(log['date'])
-                if clockin_date.year == target_date['year'] and clockin_date.month == target_date['month'] and clockin_date.day == target_date['day']:
-                    ttk.Label(frame, text = habit['name'], font = ('consolas', 10)).grid(row = r, column = 1, sticky = 'w')
-            
+                if due_date.year == target_date['year'] and due_date.month == target_date['month'] and due_date.day == target_date['day']:
+                    ttk.Label(frame, text = task['name'], font = ('consolas', 10)).grid(row = r, column = 0, sticky = 'w')
+
                     r += 1
 
+        tasks = services.TaskServices.gettasks('id', gettasks)
 
+
+        def get_habits(habits, error):
+            if error:
+                print(error)
+                return
+ 
+            r = 1
+            for habit in habits:
+                logs = habit['logs']
+                for log in logs:
+                    clockin_date = services.TimeServices.turn_datetime_strp(log['date'])
+                    if clockin_date.year == target_date['year'] and clockin_date.month == target_date['month'] and clockin_date.day == target_date['day']:
+                        ttk.Label(frame, text = habit['name'], font = ('consolas', 10)).grid(row = r, column = 1, sticky = 'w')
+            
+                        r += 1
+
+        habits = services.HabitServices.get_habits(get_habits)
+
+    def update_cavans():
+        clear_cavans()
+        draw_cavans()
 
     def clear_calendar():
         for widget in calendar_frame.grid_slaves():
@@ -189,12 +200,12 @@ def Calendar(root, max_width, max_height):
         target_date['day'] = nowtime['day']
 
         update_calendar()
-        draw_cavans()
+        update_cavans()
 
     back_to_today_button = ttk.Button(calendar_frame, text = 'back', style = 'Cal.TButton', command = back_to_today)
     back_to_today_button.grid(row = 0, column = 6)
 
-    draw_cavans()
+    update_cavans()
     #------------------------ End ------------------------
 
 
