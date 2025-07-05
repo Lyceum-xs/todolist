@@ -1,4 +1,9 @@
 ## CI/CD 技术文档
+
+* **文档版本：** V1.0
+* **编写人：** 李锡浩 杨晓舒
+* **编写日期：** 2025年07月05日
+---
 ### 1.简介
 本文档旨在详细阐述 [to do list] 的持续集成/持续部署（CI/CD）流水线。该流水线实现了从代码提交到部署的自动化软件交付流程
 #### 1.1 目的
@@ -8,20 +13,24 @@
 - 减少人工错误，提高效率。
 
 #### 1.2 范围
-本文档涵盖了Jenkins自动化构建和Ansible自动化部署在CI/CD工作流中的集成和配置。
+本文档涵盖了Jenkins自动化构建和Ansible自动化部署在CI/CD工作流中的集成和配置。  
+
+---
 
 ### 2. CI/CD 流水线概述
 CI/CD 流水线被设计为一系列自动化步骤，当代码发生变化时触发。其大致流程如下：
 
-1. 代码提交： 开发人员将代码提交到 Git 仓库。
+1. **代码提交：** 开发人员将代码提交到 Git 仓库。
 
-2. Jenkins 构建触发： Jenkins 自动检测代码更改并触发新的构建。
+2. **Jenkins 构建触发：** Jenkins 自动检测代码更改并触发新的构建。
 
-3. 自动化构建与测试： Jenkins 编译代码，运行单元测试，并打包应用程序。
+3. **自动化构建与测试：** Jenkins 编译代码，运行单元测试，并打包应用程序。
 
-4. 构件生成： 生成一个可部署的构件
+4. **构件生成：** 生成一个可部署的构件
 
-5. Ansible 部署触发： 构建成功后，Jenkins 触发 Ansible 进行部署。
+5. **Ansible 部署触发：** 构建成功后，Jenkins 触发 Ansible 进行部署。
+
+---
 
 ### 3. Jenkins 自动化构建
 Jenkins 作为核心自动化服务器，负责编排CI/CD流水线中的构建和初步测试阶段。
@@ -62,6 +71,8 @@ fi
 echo "测试通过，执行 Ansible 部署..."
 ansible-playbook deploy_todolist.yml -c local
 ```
+
+---
 
 ### 4. Ansible 自动化部署
 #### 4.1. Ansible Playbook
@@ -169,7 +180,13 @@ Playbook 预定义了部署相关的关键信息：
 
 #### 4.3 Ansible 与 Jenkins 的集成
 Jenkins 通过执行 `ansible-playbook deploy_todolist.yml -c local` 命令来触发此部署 Playbook。此命令指示 Ansible 在本地执行部署任务，与 Playbook 中 hosts: localhost 的定义一致。
-### 5. 监控与日志
+
+---
+
+### 5.SonarQube 代码质量检测
+
+
+### 6. 监控与日志
 
 为了确保 CI/CD 流水线的健康运行，需要对 Jenkins 构建日志和 Ansible 部署日志进行有效监控。
 
