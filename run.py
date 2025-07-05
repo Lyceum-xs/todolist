@@ -4,6 +4,7 @@ from src.app.main import run_backend
 import threading
 from urllib import response
 import requests
+import time
 
 def start_backend():
     run_backend()
@@ -20,11 +21,15 @@ def check_backend_ready():
                 ready = True
         except requests.exceptions.RequestException:
             ready = False
+        time.sleep(1)
     return ready
 
-if __name__ == '__main__':
+def main():
     backend_thread = threading.Thread(target = start_backend, daemon = True)
     backend_thread.start()
-    
+
     if check_backend_ready():
         main_window.show_root()
+
+if __name__ == '__main__':
+    main()
