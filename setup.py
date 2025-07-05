@@ -7,12 +7,12 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 # 获取依赖列表
 def get_requirements():
-    with open("requirements.txt", "r") as f:
+    with open("requirements.txt", "r", encoding='utf-8') as f:
         return f.read().splitlines()
 
 setup(
     name='todo-list-app',
-    version='0.1.1',
+    version='0.1.0',
     author="这对吗这不队",
     description="Modern To-Do List application with task management and productivity tools",
     long_description=long_description,

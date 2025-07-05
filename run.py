@@ -1,10 +1,15 @@
-from src.gui import main_window
-from src.app.db import create_tables
-from src.app.main import run_backend
 import threading
 from urllib import response
 import requests
 import time
+import sys
+import os
+
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), 'src'))
+
+from src.gui import main_window
+from src.app.db import create_tables
+from src.app.main import run_backend
 
 def start_backend():
     run_backend()
