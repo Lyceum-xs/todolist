@@ -10,15 +10,7 @@ readme = "README.md"
 requires-python = ">=3.8"
 license = {text = "MIT"}
 authors = [
-  {name = "涴勤鎘涴祥勦", email = "1718943644@qq.com"}
-]
-classifiers = [
-    "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: MIT License",
-    "Operating System :: OS Independent",
-    "Development Status :: 4 - Beta",
-    "Environment :: Web Environment",
-    "Framework :: FastAPI",
+  {name = "杩欏鍚楄繖涓嶉槦, email = "1718943644@qq.com"}
 ]
 
 dependencies = [
@@ -30,84 +22,10 @@ dependencies = [
     "python-dotenv>=0.19.0"
 ]
 
-[project.optional-dependencies]
-dev = [
-    "pytest>=6.0",
-    "coverage",
-    "flake8"
-]
-
-[project.urls]
-homepage = "https://whucsgitlab.whu.edu.cn/devops/todolist.git"
-repository = "https://whucsgitlab.whu.edu.cn/devops/todolist.git"
-issues = "https://whucsgitlab.whu.edu.cn/devops/todolist/-/issues"
-
-[tool.setuptools]
-# 强制指定名称和版本
-distribution-name = "todolist_app"
-version = "1.0.0"
-
-# 强制指定所有文本文件的编码
-convert_2to3_doctests = ["src/**/*.py", "src/**/*.txt", "src/**/*.md", "src/**/*.html"]
-
-# 包配置
-package-dir = {"" = "src"}
-packages = ["todolist_app"]
-include-package-data = true
-zip-safe = false
-
-# 包含外部模块
-py-modules = ["run"]
-
-# 包数据配置 - 合并到一个部分
-package-data = [
-    # 包含模式
-    "src/todolist_app/templates/**/*",
-    "src/todolist_app/static/**/*",
-    "src/todolist_app/data/**/*",
-    "src/todolist_app/migrations/**/*",
-    
-    # 排除二进制文件
-    "!*.png", "!*.jpg", "!*.jpeg", "!*.gif", "!*.ico", 
-    "!*.woff", "!*.woff2", "!*.ttf", "!*.eot",
-    "!*.db", "!*.sqlite", "!*.bin", "!*.exe"
-]
-
-# 入口点配置
 [project.scripts]
 todo-list = "run:main"
 
-# Ruff 配置
-[tool.ruff]
-select = ["E", "F", "W"]
-ignore = []
-line-length = 88
-exclude = [
-    ".git",
-    "__pycache__",
-    "build",
-    "dist",
-    ".venv",
-    "env",
-    "venv"
-]
-fixable = [
-    "A", "B", "C", "D", "E", "F", "G", "I", "N", "Q", "S", "T", "W", "ANN", "ARG",
-    "BLE", "COM", "DJ", "DTZ", "EM", "ERA", "EXE", "FBT", "ICN", "INP", "ISC", "NPY", "PD",
-    "PGH", "PIE", "PL", "PT", "PTH", "PYI", "RET", "RSE", "RUF", "SIM", "SLF", "TCH", "TID",
-    "TRY", "UP", "YTT"
-]
-unfixable = []
-
-[tool.ruff.format]
-quote-style = "double"
-indent-style = "space"
-skip-magic-trailing-comma = false
-line-ending = "auto"
-
-[tool.ruff.lint.isort]
-known-first-party = ["todolist_app"]
-
-# 显式设置 README 编码
-[tool.setuptools.dynamic]
-readme = {file = "README.md", content-type = "text/markdown", charset = "utf-8"}
+[tool.setuptools]
+package-dir = {"" = "src"}
+packages = ["app", "gui"]
+include-package-data = true
