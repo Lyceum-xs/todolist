@@ -1,11 +1,12 @@
 import threading
-from urllib import response
 import requests
 import time
 import sys
 import os
 
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), 'src'))
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, BASE_DIR)
+sys.path.insert(0, os.path.join(BASE_DIR, 'src'))
 
 from src.gui import main_window
 from src.app.db import create_tables

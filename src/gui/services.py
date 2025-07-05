@@ -3,7 +3,6 @@ from datetime import datetime
 from gc import callbacks
 import tkinter as tk
 from tkinter import ttk, messagebox, scrolledtext
-from urllib import response
 import requests
 import json
 from concurrent.futures import ThreadPoolExecutor
