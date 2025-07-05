@@ -24,9 +24,12 @@ def check_backend_ready():
         time.sleep(1)
     return ready
 
-if __name__ == '__main__':
+def main():
     backend_thread = threading.Thread(target = start_backend, daemon = True)
     backend_thread.start()
 
     if check_backend_ready():
         main_window.show_root()
+
+if __name__ == '__main__':
+    main()
