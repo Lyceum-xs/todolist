@@ -2,7 +2,6 @@ import threading
 import requests
 import time
 from src.gui import main_window
-from src.app.db import create_tables
 from src.app.main import run_backend
 
 def start_backend():
