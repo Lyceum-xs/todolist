@@ -240,3 +240,5 @@ Jenkins 通过执行 `ansible-playbook deploy_todolist.yml -c local` 命令来�
 - **Jenkins 日志：** 每次构建都会生成详细日志，记录了构建过程中的每一步骤和任何错误信息。
 
 - **Ansible 日志：** Ansible 每次执行 Playbook 也会生成日志，记录了部署任务的执行结果和遇到的问题。
+
+![alt text](./assets/log.png)
