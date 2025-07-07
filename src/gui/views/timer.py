@@ -6,6 +6,7 @@ from tkinter import ttk
 import tkinter as tk
 from turtle import back
 from ..utils import clear_frame
+import pygame  # 用于播放mp3铃声
 
 # timer content
 #-------------------------------- begin -------------------------------
@@ -260,8 +261,14 @@ def Timer(root, max_width, max_height):
             min_spin.config(state='normal')
             sec_spin.config(state='normal')
             mode_display.config(text="时间到！", foreground="green")
+            try:
+                pygame.mixer.init()
+                pygame.mixer.music.load('docs/assets/preview.mp3')  
+                pygame.mixer.music.play()
+            except Exception as e:
+                print(f"铃声播放失败: {e}")
             return
-            
+        
         remaining_sec[0] -= 1
         update_display(remaining_sec[0])
         timer_id[0] = root.after(1000, countdown)

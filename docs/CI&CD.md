@@ -1,9 +1,30 @@
-## CI/CD 技术文档
+# CI/CD 技术文档
 
 * **文档版本：** V1.0
 * **编写人：** 李锡浩 杨晓舒
 * **编写日期：** 2025年07月05日
 ---
+
+**目录**
+- [CI/CD 技术文档](#cicd-技术文档)
+    - [1.简介](#1简介)
+      - [1.1 目的](#11-目的)
+      - [1.2 范围](#12-范围)
+    - [2. CI/CD 流水线概述](#2-cicd-流水线概述)
+    - [3. Jenkins 自动化构建](#3-jenkins-自动化构建)
+      - [3.1 Jenkins Job 配置](#31-jenkins-job-配置)
+        - [3.1.1 源码管理 (SCM)](#311-源码管理-scm)
+        - [3.1.2 构建步骤](#312-构建步骤)
+    - [4. Ansible 自动化部署](#4-ansible-自动化部署)
+      - [4.1. Ansible Playbook](#41-ansible-playbook)
+      - [4.2.Playbook 结构与功能](#42playbook-结构与功能)
+        - [4.2.1 变量](#421-变量)
+        - [4.2.2 部署任务](#422-部署任务)
+      - [4.3 Ansible 与 Jenkins 的集成](#43-ansible-与-jenkins-的集成)
+    - [5.SonarQube 代码质量检测](#5sonarqube-代码质量检测)
+    - [6. 监控与日志](#6-监控与日志)
+
+
 ### 1.简介
 本文档旨在详细阐述 [to do list] 的持续集成/持续部署（CI/CD）流水线。该流水线实现了从代码提交到部署的自动化软件交付流程
 #### 1.1 目的
@@ -71,6 +92,8 @@ fi
 echo "测试通过，执行 Ansible 部署..."
 ansible-playbook deploy_todolist.yml -c local
 ```
+
+![alt text](./assets/jenkins1.png)
 
 ---
 
@@ -217,3 +240,5 @@ Jenkins 通过执行 `ansible-playbook deploy_todolist.yml -c local` 命令来�
 - **Jenkins 日志：** 每次构建都会生成详细日志，记录了构建过程中的每一步骤和任何错误信息。
 
 - **Ansible 日志：** Ansible 每次执行 Playbook 也会生成日志，记录了部署任务的执行结果和遇到的问题。
+
+![alt text](./assets/log.png)
