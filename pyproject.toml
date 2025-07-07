@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "todolist-app"
-version = "0.1.0"
+version = "0.1.1"
 description = "ToDoList Application with Backend API and GUI"
 readme = "README.md"
 authors = [{ name = "这对吗这不队", email = "1718943644@qq.com" }]
@@ -38,9 +38,11 @@ packages = [
     "src.gui.views", 
     "src.gui.widgets"
 ]
-py-modules = ["run"] 
+py-modules = ["run", "run_html"] 
+
 
 [tool.setuptools.package-data]
+"html" = ["*.html", "*.css", "*.js"]
 "src.app" = ["todo.db"]
 "src.gui" = ["resources/**/*"]
 "alembic" = [
@@ -50,11 +52,12 @@ py-modules = ["run"]
 ]
 
 [tool.setuptools.data-files]
-"share/todolist/html" = ["html/*.html", "html/*.js", "html/*.css"]
+"share/todolist/html" = ["html/index.html", "html/style.css", "html/script.js"]
 "share/todolist/alembic" = ["alembic.ini"]
 
 [project.scripts]
-todolist = "run:main"
+todolist-tk = "run:main"
+todolist-web = "run_html:main"
 todolist-backend = "src.app.main:run_backend"
 todolist-gui = "src.gui.main_window:show_root"
 
