@@ -23,9 +23,9 @@ def get_tasks_by_status(db: Session, status: Literal["completed", "pending", "al
     """根据完成状态获取任务列表"""
     q = db.query(models.Task)
     if status == "completed":
-        q = q.filter(models.Task.completed.is_(True))
+        q = q.filter(models.Task.completed == True)
     elif status == "pending":
-        q = q.filter(models.Task.completed.is_(False))
+        q = q.filter(models.Task.completed == False)
     return q.all()
 
 def search_tasks_by_name(db: Session, name_query: str) -> list[models.Task]:

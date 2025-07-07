@@ -2,5 +2,5 @@ projectKey=todolist
 serverUrl=http://localhost:9000
 serverVersion=25.6.0.109173
 dashboardUrl=http://localhost:9000/dashboard?id=todolist
-ceTaskId=a8ffbb97-b4f9-421d-b948-4ddbf6a14e57
-ceTaskUrl=http://localhost:9000/api/ce/task?id=a8ffbb97-b4f9-421d-b948-4ddbf6a14e57
+ceTaskId=9aeb0da8-b161-449f-97f1-52630dcacbb8
+ceTaskUrl=http://localhost:9000/api/ce/task?id=9aeb0da8-b161-449f-97f1-52630dcacbb8
