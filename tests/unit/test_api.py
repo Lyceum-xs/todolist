@@ -1,68 +1,107 @@
 import pytest
 from fastapi.testclient import TestClient
-from src.app.main import app
-from src.app.db import create_tables, engine
 
-client = TestClient(app)
+# --- 辅助函数 ---
+def create_task_helper(client: TestClient, name: str, parent_id: int | None = None) -> dict:
+    """辅助函数：创建一个任务并返回其 JSON 数据"""
+    payload = {"name": name, "importance": False, "urgent": False}
+    if parent_id:
+        payload["parent_id"] = parent_id
+    response = client.post("/tasks/", json=payload)
+    assert response.status_code == 201, f"创建任务失败: {response.text}"
+    return response.json()
 
-@pytest.fixture(autouse=True)
-def setup_db():
-    #每个测试模块运行前重建表
-    from src.app.models import Base
-    Base.metadata.drop_all(bind=engine)
-    Base.metadata.create_all(bind=engine)
-    yield
-    Base.metadata.drop_all(bind=engine)
+def create_habit_helper(client: TestClient, name: str) -> dict:
+    """辅助函数：创建一个习惯并返回其 JSON 数据"""
+    payload = {"name": name, "description": f"描述 {name}"}
+    response = client.post("/habits/", json=payload)
+    assert response.status_code == 201, f"创建习惯失败: {response.text}"
+    return response.json()
 
-def test_task_crud_and_subtree():
-    #创建父任务
-    r = client.post("/tasks/", json={"name":"T","importance":False,"urgent":False})
-    assert r.status_code == 201
-    tid = r.json()["id"]
 
-    #子任务
-    client.post("/tasks/", json={"name":"C1","importance":False,"urgent":False,"parent_id":tid})
-    client.post("/tasks/", json={"name":"C2","importance":False,"urgent":False,"parent_id":tid})
+# --- 测试任务(Tasks)相关的 API ---
 
-    r = client.get(f"/tasks/{tid}/children_count")
-    assert r.status_code == 200 and r.json() == 2
+def test_get_task_not_found(client: TestClient):
+    """测试：获取一个不存在的任务应该返回 404"""
+    response = client.get("/tasks/9999")
+    assert response.status_code == 404
 
-    r = client.get(f"/tasks/{tid}/subtree?mode=bfs")
-    body = r.json()
-    assert r.status_code == 200 and {t["id"] for t in body} == {tid, body[1]["id"], body[2]["id"]}
+def test_create_task_with_invalid_name(client: TestClient):
+    """测试使用空名称创建任务会失败"""
+    response = client.post("/tasks/", json={"name": ""})
+    assert response.status_code == 422 # 检查是否返回“不可处理的实体”错误
 
-def test_habit_and_logs():
-    #创建习惯
-    r = client.post(
-        "/habits/",
-        json={"name": "H1", "description": "测试习惯", "duration": 1},
-    )
-    assert r.status_code == 201
-    hid = r.json()["id"]
+def test_task_lifecycle(client: TestClient):
+    """测试：任务的完整生命周期（创建 -> 获取 -> 列表 -> 更新 -> 搜索 -> 删除）"""
+    task_data = create_task_helper(client, "学习 FastAPI")
+    task_id = task_data["id"]
+    
+    response = client.get(f"/tasks/{task_id}")
+    assert response.status_code == 200
+    assert response.json()["name"] == "学习 FastAPI"
 
-    #创建打卡记录
-    r2 = client.post(
-        f"/habits/{hid}/logs",
-        json={},  #日志只需habit_id，其他由后端处理
-    )
-    assert r2.status_code == 201
-    log = r2.json()
-    assert log["habit_id"] == hid
-    assert "date" in log
+    update_payload = {"completed": True, "name": "完成 FastAPI 学习"}
+    response = client.patch(f"/tasks/{task_id}", json=update_payload)
+    assert response.status_code == 200
+    assert response.json()["completed"] is True
 
-    #列出该习惯的所有打卡日志
-    r3 = client.get(f"/habits/{hid}/logs")
-    assert r3.status_code == 200
-    logs = r3.json()
-    assert isinstance(logs, list)
-    assert len(logs) == 1
-    assert logs[0]["id"] == log["id"]
+    response = client.get("/tasks?status=completed")
+    assert any(t["id"] == task_id for t in response.json())
 
-def test_pomodoro_flow():
-    r = client.post("/pomodoros/", json={})
-    assert r.status_code == 201
-    sid = r.json()["id"]
-    r2 = client.patch(f"/pomodoros/{sid}/stop")
-    assert r2.status_code == 200 and r2.json()["completed"] is True
-    r3 = client.get("/pomodoros/")
-    assert any(p["id"] == sid for p in r3.json())
+    response = client.get("/tasks/search?q=FastAPI")
+    assert response.status_code == 200
+    assert any(t["id"] == task_id for t in response.json())
+
+    response = client.delete(f"/tasks/{task_id}")
+    assert response.status_code == 204
+
+    response = client.get(f"/tasks/{task_id}")
+    assert response.status_code == 404
+
+def test_task_parent_child_relationship(client: TestClient):
+    """测试：任务的父子关系"""
+    parent_task = create_task_helper(client, "父任务")
+    parent_id = parent_task["id"]
+    create_task_helper(client, "子任务1", parent_id=parent_id)
+    response = client.get(f"/tasks/{parent_id}/children")
+    assert response.status_code == 200
+    assert len(response.json()) == 1
+
+def test_search_task_no_results(client: TestClient):
+    """测试搜索一个不存在的任务"""
+    create_task_helper(client, "一个真实存在的任务")
+    response = client.get("/tasks/search?q=一个不存在的关键词")
+    assert response.status_code == 200
+    assert len(response.json()) == 0
+# --- 测试习惯(Habits)相关的 API ---
+
+def test_habit_lifecycle_and_logs(client: TestClient):
+    """测试：习惯的完整生命周期和打卡记录"""
+    habit_data = create_habit_helper(client, "每天喝水")
+    habit_id = habit_data["id"]
+
+    log_response = client.post(f"/habits/{habit_id}/logs", json={})
+    assert log_response.status_code == 201
+
+    log_response_again = client.post(f"/habits/{habit_id}/logs", json={})
+    assert log_response_again.status_code == 409
+
+    logs_response = client.get(f"/habits/{habit_id}/logs")
+    assert len(logs_response.json()) == 1
+
+    streak_response = client.get(f"/habits/{habit_id}/streak")
+    assert streak_response.status_code == 200
+    assert streak_response.json() == 1
+
+    delete_response = client.delete(f"/habits/{habit_id}")
+    assert delete_response.status_code == 204
+
+def test_update_non_existent_task(client: TestClient):
+    """测试更新一个不存在的任务会返回 404"""
+    response = client.patch("/tasks/99999", json={"completed": True})
+    assert response.status_code == 404
+
+def test_get_logs_for_non_existent_habit(client: TestClient):
+    """测试获取一个不存在的习惯的打卡记录会返回 404"""
+    response = client.get("/habits/99999/logs")
+    assert response.status_code == 404

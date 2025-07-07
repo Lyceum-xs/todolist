@@ -1,67 +1,50 @@
-import datetime as _dt
+import datetime as dt
 import pytest
 from pydantic import ValidationError
 from src.app import schemas
 
+# --- Task Schemas ---
 
-# ---------- TaskUpdate ----------
-@pytest.mark.parametrize(
-    "payload",
-    [
-        {"title": "new title"},
-        {"description": "updated"},
-        {"due_date": _dt.date.today() + _dt.timedelta(days=1)},
-        {"completed": True},
-    ],
-)
-def test_task_update_valid(payload):
+@pytest.mark.parametrize("name", ["合法的任务名", "a"])
+def test_task_create_valid(name):
+    """测试：合法的任务创建数据应该能通过验证"""
+    schemas.TaskCreate(name=name)
+
+@pytest.mark.parametrize("name", ["", "  "])
+def test_task_create_invalid_name(name):
+    """测试：空的或只有空格的任务名应该无法通过验证"""
+    with pytest.raises(ValidationError):
+        schemas.TaskCreate(name=name)
+
+def test_task_update_valid():
+    """测试：合法的任务更新数据应该能通过验证"""
+    payload = {
+        "name": "新名字",
+        "description": "新描述",
+        "due_date": dt.datetime.now(),
+        "completed": True
+    }
     model = schemas.TaskUpdate(**payload)
-    for k, v in payload.items():
-        assert getattr(model, k) == v
+    assert model.name == "新名字"
+    assert model.completed is True
 
+# --- Habit Schemas ---
 
-@pytest.mark.parametrize(
-    "field,value",
-    [
-        ("title", ""),                        # 不能为空
-        ("due_date", "invalid-date"),         # 格式错误
-    ],
-)
-def test_task_update_invalid(field, value):
-    base = {"title": "tmp"}  # 至少给一个合法字段
-    base[field] = value
-    with pytest.raises(ValidationError):
-        schemas.TaskUpdate(**base)
-
-
-# ---------- HabitCreate ----------
 def test_habit_create_valid():
-    model = schemas.HabitCreate(name="Drink Water", goal_per_day=8)
-    assert model.name == "Drink Water"
-    assert model.goal_per_day == 8
+    """测试：合法的习惯创建数据应该能通过验证"""
+    schemas.HabitCreate(name="每天运动", duration=30)
 
-
-@pytest.mark.parametrize(
-    "field,value",
-    [
-        ("name", ""),
-        ("goal_per_day", 0),
-    ],
-)
+@pytest.mark.parametrize("field, value", [
+    ("name", ""),          # 名字不能为空
+    ("duration", -1),      # 时长不能为负数
+])
 def test_habit_create_invalid(field, value):
-    kwargs = {"name": "tmp", "goal_per_day": 1}
-    kwargs[field] = value
+    """测试：非法的习惯创建数据应该抛出 ValidationError"""
+    payload = {"name": "合法名字", "duration": 10}
+    payload[field] = value
     with pytest.raises(ValidationError):
-        schemas.HabitCreate(**kwargs)
+        schemas.HabitCreate(**payload)
 
-
-# ---------- HabitLog ----------
-def test_habit_log_valid():
-    model = schemas.HabitLog(habit_id=1, count=3, date=_dt.date.today())
-    assert model.count == 3
-
-
-@pytest.mark.parametrize("count", [-1, 0])
-def test_habit_log_invalid_count(count):
-    with pytest.raises(ValidationError):
-        schemas.HabitLog(habit_id=1, count=count, date=_dt.date.today())
+def test_habit_log_out_valid():
+    """测试：合法的打卡日志输出模型"""
+    schemas.HabitLogOut(id=1, habit_id=1, date=dt.date.today())

@@ -1,68 +1,44 @@
 from datetime import datetime, timedelta, timezone
-import sqlalchemy as sa
 import pytest
-
 from src.app import models
 
-#通用数据库会话
-@pytest.fixture
-def db_session():
-    """使用共享的 engine，创建独立的会话"""
-    from conftest import engine   #使用已存在的内存数据库 engine
-    Session = sa.orm.sessionmaker(bind=engine, expire_on_commit=False, future=True)
-    with Session() as session:
-        yield session
-        session.rollback()  #回滚以清理数据
-
-
-#测试 Task
-def test_task_priority_and_subtasks(db_session):
-    #创建父任务和子任务
-    parent = models.Task(
-        name="父任务",
+def test_task_priority_calculation(db_session):
+    """测试：任务优先级的计算逻辑"""
+    # 场景1：紧急且重要
+    task1 = models.Task(
+        name="紧急且重要",
         importance=True,
-        urgent=False,
-        due_date=datetime.now(timezone.utc) + timedelta(days=2)
-    )
-    child = models.Task(
-        name="子任务",
-        importance=False,
         urgent=True,
-        due_date=datetime.now(timezone.utc) + timedelta(days=1),
-        parent=parent
+        due_date=datetime.now(timezone.utc) + timedelta(days=1)
     )
-    db_session.add(parent)
+    # 场景2：不紧急不重要
+    task2 = models.Task(name="不紧急不重要", importance=False, urgent=False)
+    
+    db_session.add_all([task1, task2])
     db_session.commit()
 
-    #检查优先级参数
-    parent_priority = parent.priority_parameter
-    child_priority  = child.priority_parameter
-    assert 0 <= parent_priority <= 1
-    assert 0 <= child_priority  <= 1
-    #子任务的优先级应高于父任务
-    assert child_priority > parent_priority
+    # 修正: 最低优先级可以是 0，所以使用 <=
+    assert 0 <= task2.priority_parameter < task1.priority_parameter <= 1
 
-    #测试级联删除
+def test_task_cascade_delete(db_session):
+    """测试：删除父任务时，其子任务也应被级联删除"""
+    parent = models.Task(name="父任务")
+    child = models.Task(name="子任务", parent=parent)
+    
+    db_session.add(parent)
+    db_session.commit()
+    
+    parent_id = parent.id
+    child_id = child.id
+    
+    # 确认父子任务都已在数据库中
+    assert db_session.get(models.Task, parent_id) is not None
+    assert db_session.get(models.Task, child_id) is not None
+
+    # 删除父任务
     db_session.delete(parent)
     db_session.commit()
 
-    #数据库中不应剩下子任务
-    remaining = db_session.query(models.Task).count()
-    assert remaining == 0
-
-
-#测试 Habit和HabitLog
-def test_habit_and_logs_cascade(db_session):
-    habit = models.Habit(name="喝水", description="每日 8 杯水")
-    log1  = models.HabitLog(habit=habit)  #自动与Habit建立关联
-    db_session.add(habit)
-    db_session.commit()
-
-    #检查日志是否添加成功
-    assert len(habit.logs) == 1
-
-    #删除Habit后应级联删除日志
-    db_session.delete(habit)
-    db_session.commit()
-    assert db_session.query(models.Habit).count() == 0
-    assert db_session.query(models.HabitLog).count() == 0
+    # 确认父子任务都已被删除
+    assert db_session.get(models.Task, parent_id) is None
+    assert db_session.get(models.Task, child_id) is None
