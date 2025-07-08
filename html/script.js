@@ -189,13 +189,51 @@ document.addEventListener('DOMContentLoaded', () => {
         renderTasks(filteredTasks);
     }
 
+    // ================================================================
+    // 任务优先级计算工具函数
+    // ================================================================
+    function computePriority(task) {
+        if (task.completed) return 0.0;
+
+        const importanceWeight = 0.45;
+        const urgentWeight     = 0.45;
+        const dueDateWeight    = 0.10;
+
+        const importanceValue = task.importance ? 1 : 0;
+        const urgentValue     = task.urgent     ? 1 : 0;
+
+        const now = new Date();
+
+        let dueDateValue = 0.0;
+        if (task.due_date) {
+            const due = new Date(task.due_date);
+            if (due < now) {
+                dueDateValue = 1.0; // 已超期
+            } else {
+                const daysToDue = Math.max(Math.ceil((due - now) / 86400000), 0);
+                dueDateValue = 1 / (daysToDue + 1);
+            }
+        }
+        return importanceValue * importanceWeight +
+               urgentValue     * urgentWeight     +
+               dueDateValue    * dueDateWeight;
+    }
+
     function renderTasks(tasks) {
         taskListElement.innerHTML = '';
         if (!tasks || tasks.length === 0) { 
             taskListElement.innerHTML = '<li>太棒了，当前分类下没有任务！</li>'; 
             return; 
         }
-        tasks.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).forEach(task => {
+        const pending   = tasks.filter(t => !t.completed);
+        const completed = tasks.filter(t =>  t.completed);
+
+        pending.sort((a, b) => computePriority(b) - computePriority(a));
+        completed.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+        const sortedTasks = pending.concat(completed);
+
+        sortedTasks.forEach(task => {
             const dueDateText = task.due_date ? new Date(task.due_date).toLocaleDateString() : '';
             const taskHTML = `
                 <li class="task-item ${task.completed ? 'completed' : ''}" data-task-id="${task.id}">
@@ -249,6 +287,10 @@ document.addEventListener('DOMContentLoaded', () => {
                                 taskListElement.innerHTML = '<li>太棒了，当前分类下没有任务！</li>';
                             }
                         }, 400);
+                    }
+                    else if (activeFilter === 'all') {
+                        // 在“全部”视图中重新渲染列表，使已完成任务即时排到底部
+                        renderTasks(tasksCache);
                     }
                 })
                 .catch(() => {
