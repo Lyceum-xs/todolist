@@ -1,5 +1,3 @@
-# tests/unit/test_crud.py
-
 import pytest
 from pydantic import ValidationError
 
@@ -15,7 +13,6 @@ def sample_task():
 
 def test_create_task_increases_count(db_session, sample_task):
     """测试创建任务后，数据库中的任务总数会增加。"""
-    # 修正: 使用 crud.py 中真实存在的函数 get_tasks_by_status
     before_count = len(crud.get_tasks_by_status(db_session, status="all"))
     crud.create_task(db_session, sample_task)
     after_count = len(crud.get_tasks_by_status(db_session, status="all"))
